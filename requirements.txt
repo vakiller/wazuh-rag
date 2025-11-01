@@ -1,0 +1,24 @@
+# Core dependencies for Wazuh Alert Collector
+opensearch-py==2.3.1         # OpenSearch/Elasticsearch client for Wazuh Indexer
+apscheduler==3.10.4          # Scheduler for periodic collection
+requests>=2.31.0             # HTTP library (dependency for opensearch-py)
+
+# Optional dependencies (uncomment as needed)
+# kafka-python==2.0.2        # For Kafka output handler
+# python-dotenv==1.0.0       # For loading .env files
+
+# Development dependencies (optional)
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# black>=23.0.0
+# flake8>=6.0.0
+
+# Data processing (for future phases)
+# pandas>=2.0.0
+# numpy>=1.24.0
+
+# Future RAG/LLM dependencies (Phase 2+)
+# langchain>=0.1.0
+# openai>=1.0.0
+# chromadb>=0.4.0
+# sentence-transformers>=2.2.0
