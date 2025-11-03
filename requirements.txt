@@ -1,11 +1,31 @@
-# Core dependencies for Wazuh Alert Collector
+# RAG-based Threat Analysis System - Requirements
+# Installation: pip install -r requirements.txt
+#
+# IMPORTANT NOTES:
+# - Phase 2 requires specific versions due to compatibility issues
+# - Pillow must be >= 12.0.0 (transformers compatibility)
+# - urllib3 must be < 2.0.0 (opensearch-py compatibility)
+# - If installation fails, try: pip cache purge && pip install -r requirements.txt
+
+# Phase 1: Wazuh Alert Collector dependencies
 opensearch-py==2.3.1         # OpenSearch/Elasticsearch client for Wazuh Indexer
 apscheduler==3.10.4          # Scheduler for periodic collection
 requests>=2.31.0             # HTTP library (dependency for opensearch-py)
 
 # Optional dependencies (uncomment as needed)
 # kafka-python==2.0.2        # For Kafka output handler
-# python-dotenv==1.0.0       # For loading .env files
+python-dotenv==1.0.0         # For loading .env files (REQUIRED)
+
+# Phase 2: Knowledge Ingestion dependencies
+pyyaml>=6.0.1                # YAML configuration file parsing
+sentence-transformers==5.1.2 # Embedding model for vector generation (EXACT version required)
+transformers==4.57.1         # Transformer models (dependency of sentence-transformers)
+Pillow>=12.0.0               # Image processing (required for transformers compatibility)
+torch>=2.9.0                 # PyTorch (dependency of sentence-transformers)
+faiss-cpu>=1.7.4             # FAISS vector similarity search (CPU version)
+# faiss-gpu>=1.7.4           # Use this instead if CUDA GPU available
+numpy>=1.24.0                # Array operations for embeddings
+urllib3>=1.26.0,<2.0.0       # HTTP library (must be <2.0.0 for opensearch-py compatibility)
 
 # Development dependencies (optional)
 # pytest>=7.4.0
@@ -13,12 +33,6 @@ requests>=2.31.0             # HTTP library (dependency for opensearch-py)
 # black>=23.0.0
 # flake8>=6.0.0
 
-# Data processing (for future phases)
-# pandas>=2.0.0
-# numpy>=1.24.0
-
-# Future RAG/LLM dependencies (Phase 2+)
+# Future RAG/LLM dependencies (Phase 3+)
 # langchain>=0.1.0
 # openai>=1.0.0
-# chromadb>=0.4.0
-# sentence-transformers>=2.2.0

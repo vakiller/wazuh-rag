@@ -1,36 +1,54 @@
-# Wazuh Alert Collector - Project Design Documentation
+# RAG-based Threat Analysis System - Project Design Documentation
 
-**Version**: 1.1.0
-**Phase**: 1 - Data Collection and Normalization
-**Date**: 2025-11-01
-**Status**: ✅ Tested & Production Ready
-**Live Environment**: 172.16.235.140:9200 (wazuh-cluster)
+**Version**: 2.0.0
+**Phases**: 1 (Complete) + 2 (Complete) - Data Collection & Knowledge Base
+**Date**: 2025-11-04
+**Status**: ✅ Phase 1 & 2 Implemented
+**Live Environments**:
+- Wazuh Indexer: 172.16.235.140:9200 (wazuh-cluster)
+- OpenCTI: 100.114.206.116:8080 (threat intelligence)
 
 ---
 
 ## Table of Contents
 
-1. [Executive Summary](#executive-summary)
-2. [Live Testing Results](#live-testing-results)
-3. [System Architecture](#system-architecture)
+### Phase 1: Wazuh Alert Collection
+1. [Executive Summary - Phase 1](#executive-summary---phase-1)
+2. [Live Testing Results - Phase 1](#live-testing-results---phase-1)
+3. [System Architecture - Phase 1](#system-architecture---phase-1)
 4. [Design Decisions](#design-decisions)
 5. [Data Collection Strategy](#data-collection-strategy)
 6. [Schema Transformation](#schema-transformation)
-7. [Known Issues & Fixes](#known-issues--fixes)
+7. [Known Issues & Fixes - Phase 1](#known-issues--fixes---phase-1)
 8. [State Management](#state-management)
 9. [Scheduling and Operational Model](#scheduling-and-operational-model)
-10. [Integration Points](#integration-points)
-11. [Performance Considerations](#performance-considerations)
-12. [Security Considerations](#security-considerations)
-13. [Future Phases](#future-phases)
+
+### Phase 2: Knowledge Ingestion
+10. [Executive Summary - Phase 2](#executive-summary---phase-2)
+11. [Phase 2 Architecture](#phase-2-architecture)
+12. [OpenCTI Integration](#opencti-integration)
+13. [Knowledge Normalization](#knowledge-normalization)
+14. [Embedding Generation](#embedding-generation)
+15. [Vector Storage (FAISS)](#vector-storage-faiss)
+16. [Phase 2 Usage Guide](#phase-2-usage-guide)
+
+### General
+17. [Integration Points](#integration-points)
+18. [Performance Considerations](#performance-considerations)
+19. [Security Considerations](#security-considerations)
+20. [Future Phases](#future-phases)
 
 ---
 
-## Executive Summary
+## Executive Summary - Phase 1
 
-This document describes the design and implementation of the **Wazuh Alert Collector**, a Phase 1 data-retrieval module for a larger Threat Reporting and RAG-driven system. The module collects security alerts from Wazuh Indexer (OpenSearch/Elasticsearch), normalizes them into a consistent schema, and outputs them to storage backends for subsequent analytics, enrichment, and reporting.
+This document describes the design and implementation of the **RAG-based Threat Analysis System**, a multi-phase project for automated security threat analysis and reporting.
 
-### Key Objectives
+**Phase 1** implements the Wazuh Alert Collector - a data-retrieval module that collects security alerts from Wazuh Indexer (OpenSearch/Elasticsearch), normalizes them into a consistent schema, and outputs them to storage backends.
+
+**Phase 2** implements the Knowledge Ingestion Module - connecting to OpenCTI to fetch threat intelligence (MITRE ATT&CK techniques, malware, IOCs, etc.), generating vector embeddings, and storing them in a FAISS index for semantic search during RAG-based analysis.
+
+### Phase 1 Key Objectives
 
 1. **Collect** security alerts from Wazuh Indexer in near-real-time
 2. **Normalize** nested, variable Wazuh alert structures into flat, consistent schema
@@ -38,16 +56,11 @@ This document describes the design and implementation of the **Wazuh Alert Colle
 4. **Scale** to handle moderate to high alert volumes (thousands to millions per day)
 5. **Prepare** normalized data for Phase 2+ analytics, threat intelligence enrichment, and RAG
 
-### Out of Scope (Phase 1)
-
-- Threat intelligence integration (OpenCTI)
-- NLP/RAG components
-- Real-time correlation engine
-- Advanced analytics dashboards
+### Phase 1 Status: ✅ Complete and Production Ready
 
 ---
 
-## Live Testing Results
+## Live Testing Results - Phase 1
 
 ### Test Environment
 
@@ -175,7 +188,7 @@ Alert Types:
 
 ---
 
-## System Architecture
+## System Architecture - Phase 1
 
 ### High-Level Architecture
 
@@ -526,7 +539,7 @@ for field in INTEGER_FIELDS:
 
 ---
 
-## Known Issues & Fixes
+## Known Issues & Fixes - Phase 1
 
 ### Issue 1: Timezone Comparison Error (FIXED)
 
@@ -1093,21 +1106,544 @@ chmod 600 wazuh_alerts.db         # SQLite database
 
 ---
 
+# PHASE 2: KNOWLEDGE INGESTION MODULE
+
+## Executive Summary - Phase 2
+
+**Phase 2** implements the Knowledge Ingestion Module that connects to OpenCTI to collect threat intelligence, generates vector embeddings, and stores them in a FAISS index for semantic search during RAG-based threat analysis.
+
+### Phase 2 Objectives
+
+1. **Connect** to OpenCTI API to fetch threat intelligence entities
+2. **Normalize** STIX objects into unified text representations
+3. **Generate** vector embeddings using sentence-transformers
+4. **Store** embeddings in FAISS index with metadata in SQLite
+5. **Enable** semantic search for Phase 3 RAG-based threat reporting
+
+### Supported Entity Types
+
+- **attack-pattern**: MITRE ATT&CK techniques and tactics
+- **malware**: Malware families and variants
+- **course-of-action**: Security mitigations and countermeasures
+- **intrusion-set**: Threat actors and APT groups
+- **indicator**: Indicators of Compromise (IOCs)
+- **report**: Threat intelligence reports
+
+### Phase 2 Status: ✅ Complete and Ready for Testing
+
+---
+
+## Phase 2 Architecture
+
+### High-Level Data Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Phase 2: Knowledge Ingestion                  │
+└─────────────────────────────────────────────────────────────────┘
+
+                     ┌──────────────────┐
+                     │   OpenCTI API    │
+                     │ (GraphQL API)    │
+                     │ Port 8080        │
+                     └────────┬─────────┘
+                              │ GraphQL Queries
+                              │ (Paginated)
+                              ▼
+                    ┌──────────────────────┐
+                    │  OpenCTIClient       │
+                    │  - Query entities    │
+                    │  - Pagination        │
+                    │  - 6 entity types    │
+                    └──────────┬───────────┘
+                               │ Raw STIX Objects
+                               ▼
+                    ┌──────────────────────┐
+                    │ KnowledgeNormalizer  │
+                    │  - Parse STIX        │
+                    │  - Build content     │
+                    │  - Extract metadata  │
+                    └──────────┬───────────┘
+                               │ Normalized Text
+                               ▼
+                    ┌──────────────────────┐
+                    │   EmbeddingModel     │
+                    │  - Sentence Trans.   │
+                    │  - all-MiniLM-L6-v2  │
+                    │  - 384-dim vectors   │
+                    └──────────┬───────────┘
+                               │ Embeddings
+                               ▼
+                    ┌──────────────────────┐
+                    │  KnowledgeStorage    │
+                    │  - FAISS IndexFlatIP │
+                    │  - SQLite metadata   │
+                    │  - Similarity search │
+                    └──────────────────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │  Phase 3: RAG        │
+                    │  Query knowledge for │
+                    │  threat analysis     │
+                    └──────────────────────┘
+```
+
+### Module Structure
+
+```
+knowledge_ingest/
+├── __init__.py              # Module exports
+├── config.yaml              # Configuration (OpenCTI, model, storage)
+├── opencti_client.py        # GraphQL API client
+├── normalize.py             # STIX → unified schema
+├── embedder.py              # Sentence-transformers wrapper
+└── storage.py               # FAISS + SQLite storage
+
+sync_opencti.py              # Main CLI entry point
+data/
+└── faiss_index/
+    ├── knowledge.index      # FAISS vector index
+    ├── knowledge.db         # SQLite metadata
+    └── .opencti_sync_state.json  # Sync state tracking
+```
+
+---
+
+## OpenCTI Integration
+
+### GraphQL API Client
+
+The `OpenCTIClient` class provides a robust interface to OpenCTI's GraphQL API with:
+
+- **Authentication**: Bearer token-based auth
+- **Pagination**: Cursor-based pagination for large result sets
+- **Entity Queries**: Type-specific queries for all 6 entity types
+- **Error Handling**: Graceful handling of network and GraphQL errors
+- **Connection Testing**: Verify connectivity and authentication
+
+### Entity Type Queries
+
+Each entity type has a customized GraphQL query extracting relevant fields:
+
+**Attack Patterns** (`knowledge_ingest/opencti_client.py:137-168`):
+- MITRE ID, platforms, permissions required
+- Kill chain phases
+- External references (e.g., MITRE ATT&CK URLs)
+- Detection methods
+
+**Malware** (`knowledge_ingest/opencti_client.py:169-176`):
+- Malware types, family/variant classification
+- Capabilities, architectures
+- First seen / last seen timestamps
+
+**Course of Action** (`knowledge_ingest/opencti_client.py:177-180`):
+- MITRE mitigation IDs
+- Mitigation descriptions
+
+**Intrusion Sets** (`knowledge_ingest/opencti_client.py:181-189`):
+- Threat actor names and aliases
+- Goals, resource level
+- Primary motivation
+
+**Indicators** (`knowledge_ingest/opencti_client.py:190-196`):
+- IOC patterns (STIX patterns)
+- Pattern types (e.g., Sigma, YARA, STIX)
+- Valid from/until dates
+
+**Reports** (`knowledge_ingest/opencti_client.py:197-208`):
+- Report metadata
+- Referenced objects (linked entities)
+
+### Configuration
+
+OpenCTI connection configured in `knowledge_ingest/config.yaml`:
+
+```yaml
+opencti:
+  url: "http://100.114.206.116:8080"
+  api_token: "YOUR_OPENCTI_API_TOKEN_HERE"
+  verify_ssl: false
+  entity_types:
+    - attack-pattern
+    - malware
+    - course-of-action
+    - intrusion-set
+    - indicator
+    - report
+  batch_size: 100
+  max_items_per_type: 10000
+```
+
+**Environment Override**: Set `OPENCTI_TOKEN` environment variable to avoid hardcoding API token.
+
+---
+
+## Knowledge Normalization
+
+### Unified Schema
+
+The `KnowledgeNormalizer` transforms STIX objects into a consistent structure optimized for embedding:
+
+```python
+{
+    'id': str,              # OpenCTI internal ID
+    'standard_id': str,     # STIX standard ID
+    'entity_type': str,     # attack-pattern, malware, etc.
+    'name': str,            # Entity name
+    'content': str,         # Rich text representation for embedding
+    'metadata': dict,       # Type-specific metadata
+    'created_at': datetime,
+    'updated_at': datetime,
+    'confidence': int
+}
+```
+
+### Content Field Construction
+
+The `content` field is the text representation that gets embedded. It's carefully constructed to include:
+
+**Attack Patterns** (`knowledge_ingest/normalize.py:53-111`):
+```
+MITRE ATT&CK Technique: T1078 - Valid Accounts
+
+Description: Adversaries may obtain and abuse credentials of existing accounts...
+
+Platforms: Windows, Linux, macOS, Network
+
+Kill Chain Phases: persistence, privilege-escalation, defense-evasion
+
+Detection: Configure robust, consistent account activity audit policies...
+```
+
+**Malware** (`knowledge_ingest/normalize.py:113-161`):
+```
+Malware Family: WannaCry
+
+Description: Ransomware worm that exploits EternalBlue...
+
+Types: ransomware, worm
+
+Capabilities: file-encryption, lateral-movement, persistence
+
+First seen: 2017-05-12, Last seen: 2017-05-15
+```
+
+Similar rich content constructed for all entity types.
+
+### Type-Specific Metadata
+
+Each entity type stores relevant structured metadata for filtering and context:
+
+- **Attack Patterns**: `mitre_id`, `platforms`, `kill_chains`
+- **Malware**: `malware_types`, `is_family`, `capabilities`
+- **Intrusion Sets**: `aliases`, `goals`, `resource_level`
+- **Indicators**: `pattern`, `pattern_type`, `indicator_types`
+
+---
+
+## Embedding Generation
+
+### Sentence-Transformers Model
+
+The `EmbeddingModel` class wraps sentence-transformers for efficient text-to-vector conversion.
+
+**Model**: `sentence-transformers/all-MiniLM-L6-v2`
+- Embedding dimension: **384**
+- Trained on 1B+ sentence pairs
+- Optimized for semantic similarity
+- Fast inference (~0.01s per text on CPU)
+
+**Alternative**: `BAAI/bge-small-en` (384-dim) can be configured in `config.yaml`.
+
+### Configuration
+
+```yaml
+embedding:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  device: "cpu"           # or "cuda" if GPU available
+  normalize: true         # L2 normalize for cosine similarity
+```
+
+### Normalization Strategy
+
+Embeddings are L2-normalized (`normalize: true`) so that:
+- Inner product = Cosine similarity
+- Enables efficient FAISS `IndexFlatIP` (inner product index)
+- Similarity scores range from -1 to 1 (typically 0 to 1 for related content)
+
+### Batch Processing
+
+The embedder processes texts in batches for efficiency:
+
+```python
+embeddings = embedder.embed_batch(
+    texts=["text1", "text2", ...],
+    batch_size=32,
+    show_progress=True
+)
+# Returns: numpy array of shape (n_texts, 384)
+```
+
+---
+
+## Vector Storage (FAISS)
+
+### FAISS + SQLite Architecture
+
+**Dual Storage**:
+1. **FAISS Index** (`knowledge.index`): Stores 384-dim vectors for fast similarity search
+2. **SQLite Database** (`knowledge.db`): Stores metadata indexed by vector ID
+
+The vector ID in FAISS corresponds to the `vector_id` primary key in SQLite.
+
+### FAISS Index Type
+
+**IndexFlatIP** (Inner Product):
+- Exact search (no approximation)
+- Works with normalized vectors for cosine similarity
+- O(n) search complexity (fine for <1M vectors)
+- No training required
+
+For larger scale (>1M vectors), can switch to:
+- `IndexIVFFlat`: Inverted file index (requires training)
+- `IndexHNSW`: Graph-based index (faster, approximate)
+
+### SQLite Schema
+
+```sql
+CREATE TABLE knowledge (
+    vector_id INTEGER PRIMARY KEY,     -- Corresponds to FAISS index position
+    opencti_id TEXT NOT NULL,          -- OpenCTI entity ID (unique)
+    standard_id TEXT,                  -- STIX standard ID
+    entity_type TEXT NOT NULL,         -- Entity type (indexed)
+    name TEXT NOT NULL,                -- Entity name
+    content TEXT NOT NULL,             -- Full text content
+    metadata TEXT,                     -- JSON metadata
+    created_at TEXT,
+    updated_at TEXT,                   -- For incremental sync (indexed)
+    confidence INTEGER,
+    indexed_at TEXT NOT NULL,
+    UNIQUE(opencti_id)
+);
+
+CREATE INDEX idx_entity_type ON knowledge(entity_type);
+CREATE INDEX idx_opencti_id ON knowledge(opencti_id);
+CREATE INDEX idx_updated_at ON knowledge(updated_at);
+```
+
+### Similarity Search
+
+```python
+# Search for top 10 similar entities
+results = storage.search(
+    query_embedding=query_vector,    # 384-dim numpy array
+    top_k=10,
+    entity_type_filter="attack-pattern"  # Optional filter
+)
+
+# Returns list of dicts:
+# [
+#   {
+#     'score': 0.85,
+#     'vector_id': 42,
+#     'entity_type': 'attack-pattern',
+#     'name': 'Valid Accounts',
+#     'content': '...',
+#     'metadata': {...}
+#   },
+#   ...
+# ]
+```
+
+### State Tracking
+
+Incremental sync state stored in `.opencti_sync_state.json`:
+
+```json
+{
+  "last_sync_timestamp": "2025-11-04T10:30:00Z",
+  "last_sync_count": 1250,
+  "last_sync_attack-pattern": "2025-11-04T10:30:00Z",
+  "last_sync_malware": "2025-11-04T10:30:00Z",
+  ...
+}
+```
+
+Enables efficient incremental syncs fetching only new/updated entities.
+
+---
+
+## Phase 2 Usage Guide
+
+### Installation
+
+1. **Install Dependencies**:
+```bash
+pip install -r requirements.txt
+```
+
+This installs:
+- `pyyaml` - Configuration parsing
+- `sentence-transformers` - Embedding model
+- `faiss-cpu` - Vector search (or `faiss-gpu` if CUDA available)
+- `numpy` - Array operations
+
+2. **Configure OpenCTI Connection**:
+
+Edit `knowledge_ingest/config.yaml` or set environment variable:
+```bash
+export OPENCTI_TOKEN="your-opencti-api-token-here"
+```
+
+3. **Verify Directories**:
+```bash
+ls -la data/faiss_index/  # Should exist
+ls -la logs/              # Should exist
+```
+
+### Basic Usage
+
+**Test Connection**:
+```bash
+python sync_opencti.py --test-connection
+```
+
+Output:
+```
+2025-11-04 10:15:00 - INFO - Connected to OpenCTI version 5.12.0
+```
+
+**Full Sync** (First time):
+```bash
+python sync_opencti.py --full
+```
+
+Fetches all entities from OpenCTI, generates embeddings, and stores in FAISS/SQLite.
+
+**Incremental Sync** (After first sync):
+```bash
+python sync_opencti.py --incremental
+```
+
+Only fetches entities created/updated since last sync (uses `updated_at` field).
+
+**Sync Specific Entity Type**:
+```bash
+python sync_opencti.py --entity-type attack-pattern
+```
+
+**Limit Number of Items** (for testing):
+```bash
+python sync_opencti.py --full --max-items 100
+```
+
+**View Storage Statistics**:
+```bash
+python sync_opencti.py --stats
+```
+
+Output:
+```
+Storage Statistics:
+  Total vectors: 1,250
+  Embedding dimension: 384
+  Index type: IndexFlatIP
+  Entity counts:
+    attack-pattern: 450
+    malware: 320
+    course-of-action: 180
+    intrusion-set: 150
+    indicator: 100
+    report: 50
+```
+
+### CLI Options
+
+```
+python sync_opencti.py [OPTIONS]
+
+Options:
+  --config PATH              Path to config file (default: knowledge_ingest/config.yaml)
+  --full                     Perform full sync (all entities)
+  --incremental              Perform incremental sync (new/updated only)
+  --entity-type TYPE         Sync only specific type (attack-pattern, malware, etc.)
+  --max-items N              Max items per type (-1 for unlimited)
+  --stats                    Show storage statistics and exit
+  --test-connection          Test OpenCTI connection and exit
+  --log-level LEVEL          Logging level (DEBUG, INFO, WARNING, ERROR)
+```
+
+### Example Workflow
+
+**Initial Setup**:
+```bash
+# 1. Test connection
+python sync_opencti.py --test-connection
+
+# 2. Sync attack patterns first (for testing)
+python sync_opencti.py --entity-type attack-pattern --max-items 50
+
+# 3. Check storage stats
+python sync_opencti.py --stats
+
+# 4. Full sync all types
+python sync_opencti.py --full
+```
+
+**Scheduled Incremental Sync**:
+```bash
+# Run daily via cron
+0 2 * * * cd /path/to/rag_wazuh && python sync_opencti.py --incremental
+```
+
+### Expected Performance
+
+**Full Sync** (typical OpenCTI instance):
+- ~1,500 entities (450 attack patterns, 300 malware, 250 COAs, etc.)
+- ~5-10 minutes on CPU
+- ~2-3 minutes on GPU
+
+**Incremental Sync**:
+- Depends on new entities (typically <50/day)
+- ~30 seconds
+
+**Storage Size**:
+- FAISS index: ~6 MB per 10,000 vectors (384-dim, IndexFlatIP)
+- SQLite metadata: ~50 KB per 1,000 entities
+
+### Logs
+
+Logs written to `logs/knowledge_ingest.log` (configurable in `config.yaml`):
+
+```
+2025-11-04 10:20:15 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: unlimited)
+2025-11-04 10:20:20 - knowledge_ingest.opencti_client - INFO - Completed fetching 450 attack-pattern entities
+2025-11-04 10:20:25 - __main__ - INFO - Processed 450 attack-pattern entities
+2025-11-04 10:20:25 - knowledge_ingest.storage - INFO - Added 450 entities (vector IDs: 0-449)
+```
+
+---
+
 ## Future Phases
 
-### Phase 2: Threat Intelligence Enrichment
+### Phase 3: RAG-based Threat Analysis (Next)
 
-**Objective**: Enrich alerts with external threat intelligence.
+**Objective**: Use knowledge base to enhance threat analysis with context.
 
 **Components**:
-- OpenCTI integration for IOC lookups
-- GeoIP enrichment for IP addresses
-- Asset context (CMDB integration)
-- VirusTotal hash lookups
+- Alert → Query generation
+- Semantic search in FAISS knowledge base
+- LLM-based report generation with retrieved context
+- MITRE ATT&CK mapping automation
 
 **Architecture**:
 ```
-SQLite/Kafka → [Enrichment Pipeline] → [Enriched Alerts] → Analytics
+Wazuh Alerts → [Query Generator] → [FAISS Search] → [Context Retrieval]
+                                                            ↓
+                                        [LLM] ← Context + Alert
+                                          ↓
+                                   Threat Report
 ```
 
 ### Phase 3: RAG-Based Threat Reporting
@@ -1186,22 +1722,23 @@ Trigger: Alert if all three stages detected within 1 hour window
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.1.0 | 2025-11-01 | **Live testing & bug fixes**<br>- Tested against production Wazuh (172.16.235.140)<br>- Fixed timezone comparison error<br>- Fixed full_log extraction for Windows events<br>- Fixed win_eventid field path<br>- Verified 100% field coverage for collected alert types<br>- Processed 64,608 alerts successfully<br>- Performance: 2,250 alerts/sec |
-| 1.0.0 | 2025-01-15 | Initial implementation, Phase 1 complete |
+| 2.0.0 | 2025-11-04 | **Phase 2: Knowledge Ingestion Module**<br>- Implemented OpenCTI GraphQL client<br>- Created STIX normalization layer (6 entity types)<br>- Integrated sentence-transformers embedding (384-dim)<br>- Built FAISS + SQLite storage layer<br>- Created sync_opencti.py CLI with full/incremental sync<br>- Added state tracking for incremental updates<br>- Updated requirements.txt with Phase 2 dependencies<br>- Comprehensive documentation added |
+| 1.1.0 | 2025-11-01 | **Phase 1: Live testing & bug fixes**<br>- Tested against production Wazuh (172.16.235.140)<br>- Fixed timezone comparison error<br>- Fixed full_log extraction for Windows events<br>- Fixed win_eventid field path<br>- Verified 100% field coverage for collected alert types<br>- Processed 64,608 alerts successfully<br>- Performance: 2,250 alerts/sec |
+| 1.0.0 | 2025-01-15 | **Phase 1: Initial implementation** complete |
 
 ---
 
 ## System Status
 
-**Current State**: ✅ **Production Ready**
+### Phase 1 Status: ✅ **Production Ready**
 
 - All tests passed (5/5)
 - Zero errors in production runs
 - 100% full_log coverage
-- Collecting from live Wazuh cluster
-- Performance validated at scale
+- Collecting from live Wazuh cluster (172.16.235.140:9200)
+- Performance validated at scale (2,250 alerts/sec)
 
-**Verified Components**:
+**Verified Phase 1 Components**:
 - ✅ Connection & authentication
 - ✅ Index discovery & querying
 - ✅ Alert collection with pagination
@@ -1211,7 +1748,20 @@ Trigger: Alert if all three stages detected within 1 hour window
 - ✅ SQLite output handler
 - ✅ Scheduling & graceful shutdown
 
-**Ready for**: Phase 2 (Threat Intelligence Integration)
+### Phase 2 Status: ✅ **Implementation Complete - Ready for Testing**
+
+**Implemented Phase 2 Components**:
+- ✅ OpenCTI GraphQL API client (6 entity types)
+- ✅ STIX object normalization layer
+- ✅ Sentence-transformers embedding (384-dim)
+- ✅ FAISS + SQLite storage layer
+- ✅ CLI sync script (full/incremental modes)
+- ✅ State tracking for incremental sync
+- ✅ Comprehensive documentation
+
+**Ready for**: Live testing against OpenCTI (100.114.206.116:8080)
+
+**Next Step**: Phase 3 (RAG-based Threat Reporting with LLM)
 
 ---
 

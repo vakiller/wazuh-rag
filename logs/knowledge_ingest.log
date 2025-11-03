@@ -1,0 +1,85 @@
+2025-11-04 01:07:45 - __main__ - INFO - ============================================================
+2025-11-04 01:07:45 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 01:07:45 - __main__ - INFO - ============================================================
+2025-11-04 01:07:45 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 01:07:45 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 01:07:45 - __main__ - ERROR - Embedding model error: sentence-transformers not installed. Install with: pip install sentence-transformers
+2025-11-04 01:17:10 - __main__ - INFO - ============================================================
+2025-11-04 01:17:10 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 01:17:10 - __main__ - INFO - ============================================================
+2025-11-04 01:17:10 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 01:17:10 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 01:17:16 - __main__ - ERROR - Embedding model error: sentence-transformers not installed. Install with: pip install sentence-transformers
+2025-11-04 01:17:38 - __main__ - INFO - ============================================================
+2025-11-04 01:17:38 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 01:17:38 - __main__ - INFO - ============================================================
+2025-11-04 01:17:38 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 01:17:38 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 01:17:43 - __main__ - ERROR - Embedding model error: sentence-transformers not installed. Install with: pip install sentence-transformers
+2025-11-04 01:22:52 - __main__ - INFO - ============================================================
+2025-11-04 01:22:52 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 01:22:52 - __main__ - INFO - ============================================================
+2025-11-04 01:22:52 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 01:22:52 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 01:22:57 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 01:23:01 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 01:23:01 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 01:23:01 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 01:23:01 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 01:23:01 - knowledge_ingest.storage - INFO - Created new FAISS IndexFlatIP index (dim: 384)
+2025-11-04 01:23:01 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 01:23:01 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-04 01:23:01 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 50)
+2025-11-04 01:23:01 - __main__ - ERROR - Sync failed for attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: Cannot query field "edges" on type "KillChainPhase".
+2025-11-04 01:23:01 - __main__ - ERROR - Failed to sync attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: Cannot query field "edges" on type "KillChainPhase".
+2025-11-04 01:23:01 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 01:23:01 - __main__ - INFO - ============================================================
+2025-11-04 01:23:01 - __main__ - INFO - Sync Complete
+2025-11-04 01:23:01 - __main__ - INFO - Total entities synced: 0
+2025-11-04 01:23:01 - __main__ - INFO - Storage: KnowledgeStorage(vectors=0, dim=384, index=IndexFlatIP)
+2025-11-04 01:23:01 - __main__ - INFO - ============================================================
+2025-11-04 01:23:55 - __main__ - INFO - ============================================================
+2025-11-04 01:23:55 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 01:23:55 - __main__ - INFO - ============================================================
+2025-11-04 01:23:55 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 01:23:55 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 01:24:00 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 01:24:04 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 01:24:04 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 01:24:04 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 01:24:04 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 01:24:04 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-04 01:24:04 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 01:24:04 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-04 01:24:04 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 50)
+2025-11-04 01:24:04 - __main__ - ERROR - Sync failed for attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 01:24:04 - __main__ - ERROR - Failed to sync attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 01:24:04 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 01:24:04 - __main__ - INFO - ============================================================
+2025-11-04 01:24:04 - __main__ - INFO - Sync Complete
+2025-11-04 01:24:04 - __main__ - INFO - Total entities synced: 0
+2025-11-04 01:24:04 - __main__ - INFO - Storage: KnowledgeStorage(vectors=0, dim=384, index=IndexFlatIP)
+2025-11-04 01:24:04 - __main__ - INFO - ============================================================
+2025-11-04 01:28:06 - __main__ - INFO - ============================================================
+2025-11-04 01:28:06 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 01:28:06 - __main__ - INFO - ============================================================
+2025-11-04 01:28:06 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 01:28:06 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 01:28:11 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 01:28:15 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 01:28:15 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 01:28:15 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 01:28:15 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 01:28:15 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-04 01:28:15 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 01:28:15 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-04 01:28:15 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 50)
+2025-11-04 01:28:16 - knowledge_ingest.opencti_client - INFO - Reached max items limit: 50
+2025-11-04 01:28:17 - knowledge_ingest.storage - INFO - Added 50 entities (vector IDs: 0-49)
+2025-11-04 01:28:17 - __main__ - INFO - Completed sync for attack-pattern: 50 entities
+2025-11-04 01:28:17 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 01:28:17 - __main__ - INFO - ============================================================
+2025-11-04 01:28:17 - __main__ - INFO - Sync Complete
+2025-11-04 01:28:17 - __main__ - INFO - Total entities synced: 50
+2025-11-04 01:28:17 - __main__ - INFO - Storage: KnowledgeStorage(vectors=50, dim=384, index=IndexFlatIP)
+2025-11-04 01:28:17 - __main__ - INFO - ============================================================

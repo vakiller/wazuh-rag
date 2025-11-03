@@ -1,0 +1,43 @@
+# OpenCTI Knowledge Ingestion Configuration
+
+opencti:
+  url: "http://100.114.206.116:8080"
+  api_token: "YOUR_OPENCTI_API_TOKEN_HERE"  # Set via OPENCTI_TOKEN env variable or edit here
+  verify_ssl: false
+
+  # Entity types to sync
+  entity_types:
+    - attack-pattern
+    - malware
+    - course-of-action
+    - intrusion-set
+    - indicator
+    - report
+
+  # Pagination settings
+  batch_size: 100
+  max_items_per_type: 10000  # -1 for unlimited
+
+# Embedding Model Configuration
+embedding:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"  # Alternative: "BAAI/bge-small-en"
+  device: "cpu"  # or "cuda" if GPU available
+  normalize: true  # Normalize embeddings for cosine similarity
+
+# Storage Configuration
+storage:
+  faiss_index_path: "./data/faiss_index/knowledge.index"
+  metadata_db_path: "./data/faiss_index/knowledge.db"
+  index_type: "IndexFlatIP"  # Inner product (for normalized vectors = cosine similarity)
+
+# Sync Settings
+sync:
+  incremental: true  # Only fetch new/updated items after first sync
+  state_file: "./data/faiss_index/.opencti_sync_state.json"
+  checkpoint_interval: 50  # Save state every N items
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "./logs/knowledge_ingest.log"
+  console: true
