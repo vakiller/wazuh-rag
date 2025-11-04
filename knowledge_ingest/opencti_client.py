@@ -280,7 +280,6 @@ class OpenCTIClient:
             """,
             'CourseOfAction': """
                 x_mitre_id
-                x_mitre_version
             """,
             'IntrusionSet': """
                 aliases
@@ -301,15 +300,6 @@ class OpenCTIClient:
             'Report': """
                 published
                 report_types
-                object_refs {
-                    edges {
-                        node {
-                            id
-                            entity_type
-                            name
-                        }
-                    }
-                }
             """,
         }
 

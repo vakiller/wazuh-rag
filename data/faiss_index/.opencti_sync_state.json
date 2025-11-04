@@ -1,5 +1,10 @@
 {
-  "last_sync_timestamp": "2025-11-03T18:28:15.884330Z",
-  "last_sync_count": 50,
-  "last_sync_attack-pattern": "2025-11-03T18:28:15.884330Z"
+  "last_sync_attack-pattern": "2025-11-04T15:36:28.971434Z",
+  "last_sync_malware": "2025-11-04T15:36:28.971434Z",
+  "last_sync_course-of-action": "2025-11-04T15:36:28.971434Z",
+  "last_sync_intrusion-set": "2025-11-04T15:36:28.971434Z",
+  "last_sync_indicator": "2025-11-04T15:36:28.971434Z",
+  "last_sync_report": "2025-11-04T15:36:28.971434Z",
+  "last_sync_timestamp": "2025-11-04T15:36:28.971434Z",
+  "last_sync_count": 3704
 }

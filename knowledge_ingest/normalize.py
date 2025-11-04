@@ -347,16 +347,6 @@ class KnowledgeNormalizer:
         published = entity.get('published', '')
         report_types = entity.get('report_types', [])
 
-        # Extract referenced objects
-        referenced_objects = []
-        obj_edges = entity.get('object_refs', {}).get('edges', [])
-        for edge in obj_edges:
-            node = edge.get('node', {})
-            obj_type = node.get('entity_type', '')
-            obj_name = node.get('name', '')
-            if obj_type and obj_name:
-                referenced_objects.append(f"{obj_type}: {obj_name}")
-
         content_parts = [
             f"Threat Report: {name}",
         ]
@@ -370,9 +360,6 @@ class KnowledgeNormalizer:
         if published:
             content_parts.append(f"Published: {published}")
 
-        if referenced_objects:
-            content_parts.append(f"References:\n" + "\n".join(f"- {obj}" for obj in referenced_objects[:20]))
-
         content = "\n\n".join(content_parts)
 
         return {
@@ -384,7 +371,6 @@ class KnowledgeNormalizer:
             'metadata': {
                 'published': published,
                 'report_types': report_types,
-                'referenced_objects': referenced_objects,
             },
             'created_at': KnowledgeNormalizer._parse_datetime(entity.get('created_at')),
             'updated_at': KnowledgeNormalizer._parse_datetime(entity.get('updated_at')),

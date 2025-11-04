@@ -83,3 +83,368 @@
 2025-11-04 01:28:17 - __main__ - INFO - Total entities synced: 50
 2025-11-04 01:28:17 - __main__ - INFO - Storage: KnowledgeStorage(vectors=50, dim=384, index=IndexFlatIP)
 2025-11-04 01:28:17 - __main__ - INFO - ============================================================
+2025-11-04 22:28:15 - __main__ - INFO - ============================================================
+2025-11-04 22:28:15 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 22:28:15 - __main__ - INFO - ============================================================
+2025-11-04 22:28:15 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 22:28:15 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 22:28:21 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 22:28:26 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 22:28:26 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 22:28:26 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 22:28:26 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 22:28:26 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 50 vectors
+2025-11-04 22:28:26 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 22:28:26 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-04 22:28:26 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-04 22:28:26 - __main__ - ERROR - Sync failed for attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 22:28:26 - __main__ - ERROR - Failed to sync attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 22:28:26 - __main__ - INFO - Starting sync for entity type: malware
+2025-11-04 22:28:26 - knowledge_ingest.opencti_client - INFO - Fetching malware entities (max: 10000)
+2025-11-04 22:28:27 - __main__ - ERROR - Sync failed for malware: Failed to fetch Malware page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 22:28:27 - __main__ - ERROR - Failed to sync malware: Failed to fetch Malware page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 22:28:27 - __main__ - INFO - Starting sync for entity type: course-of-action
+2025-11-04 22:28:27 - knowledge_ingest.opencti_client - INFO - Fetching course-of-action entities (max: 10000)
+2025-11-04 22:28:27 - __main__ - ERROR - Sync failed for course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: Cannot query field "x_mitre_version" on type "CourseOfAction". Did you mean "x_mitre_id", "draftVersion", or "spec_version"?
+2025-11-04 22:28:27 - __main__ - ERROR - Failed to sync course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: Cannot query field "x_mitre_version" on type "CourseOfAction". Did you mean "x_mitre_id", "draftVersion", or "spec_version"?
+2025-11-04 22:28:27 - __main__ - INFO - Starting sync for entity type: intrusion-set
+2025-11-04 22:28:27 - knowledge_ingest.opencti_client - INFO - Fetching intrusion-set entities (max: 10000)
+2025-11-04 22:28:27 - __main__ - ERROR - Sync failed for intrusion-set: Failed to fetch IntrusionSet page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 22:28:27 - __main__ - ERROR - Failed to sync intrusion-set: Failed to fetch IntrusionSet page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 22:28:27 - __main__ - INFO - Starting sync for entity type: indicator
+2025-11-04 22:28:27 - knowledge_ingest.opencti_client - INFO - Fetching indicator entities (max: 10000)
+2025-11-04 22:28:27 - __main__ - ERROR - Sync failed for indicator: Failed to fetch Indicator page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 22:28:27 - __main__ - ERROR - Failed to sync indicator: Failed to fetch Indicator page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-04 22:28:27 - __main__ - INFO - Starting sync for entity type: report
+2025-11-04 22:28:27 - knowledge_ingest.opencti_client - INFO - Fetching report entities (max: 10000)
+2025-11-04 22:28:27 - __main__ - ERROR - Sync failed for report: Failed to fetch Report page: Query execution failed: GraphQL errors: Cannot query field "object_refs" on type "Report". Did you mean "objects" or "objectLabel"?
+2025-11-04 22:28:27 - __main__ - ERROR - Failed to sync report: Failed to fetch Report page: Query execution failed: GraphQL errors: Cannot query field "object_refs" on type "Report". Did you mean "objects" or "objectLabel"?
+2025-11-04 22:28:27 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 22:28:27 - __main__ - INFO - ============================================================
+2025-11-04 22:28:27 - __main__ - INFO - Sync Complete
+2025-11-04 22:28:27 - __main__ - INFO - Total entities synced: 0
+2025-11-04 22:28:27 - __main__ - INFO - Storage: KnowledgeStorage(vectors=50, dim=384, index=IndexFlatIP)
+2025-11-04 22:28:27 - __main__ - INFO - ============================================================
+2025-11-04 22:30:11 - __main__ - INFO - ============================================================
+2025-11-04 22:30:11 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 22:30:11 - __main__ - INFO - ============================================================
+2025-11-04 22:30:11 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 22:30:11 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 22:30:16 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 22:30:20 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 22:30:20 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 22:30:20 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 22:30:20 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 22:30:20 - knowledge_ingest.storage - INFO - Created new FAISS IndexFlatIP index (dim: 384)
+2025-11-04 22:30:20 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 22:30:20 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-04 22:30:20 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-04 22:30:23 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 0-99)
+2025-11-04 22:30:23 - __main__ - INFO - Processed 100 attack-pattern entities
+2025-11-04 22:30:25 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 100-199)
+2025-11-04 22:30:25 - __main__ - INFO - Processed 200 attack-pattern entities
+2025-11-04 22:30:27 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 200-299)
+2025-11-04 22:30:27 - __main__ - INFO - Processed 300 attack-pattern entities
+2025-11-04 22:30:30 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 300-399)
+2025-11-04 22:30:30 - __main__ - INFO - Processed 400 attack-pattern entities
+2025-11-04 22:30:32 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 400-499)
+2025-11-04 22:30:32 - __main__ - INFO - Processed 500 attack-pattern entities
+2025-11-04 22:30:34 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 500-599)
+2025-11-04 22:30:34 - __main__ - INFO - Processed 600 attack-pattern entities
+2025-11-04 22:30:36 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 600-699)
+2025-11-04 22:30:36 - __main__ - INFO - Processed 700 attack-pattern entities
+2025-11-04 22:30:38 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 700-799)
+2025-11-04 22:30:38 - __main__ - INFO - Processed 800 attack-pattern entities
+2025-11-04 22:30:40 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 800-899)
+2025-11-04 22:30:40 - __main__ - INFO - Processed 900 attack-pattern entities
+2025-11-04 22:30:42 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 900-999)
+2025-11-04 22:30:42 - __main__ - INFO - Processed 1000 attack-pattern entities
+2025-11-04 22:30:43 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1000-1099)
+2025-11-04 22:30:43 - __main__ - INFO - Processed 1100 attack-pattern entities
+2025-11-04 22:30:45 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1100-1199)
+2025-11-04 22:30:45 - __main__ - INFO - Processed 1200 attack-pattern entities
+2025-11-04 22:30:46 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1200-1299)
+2025-11-04 22:30:46 - __main__ - INFO - Processed 1300 attack-pattern entities
+2025-11-04 22:30:47 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1300-1399)
+2025-11-04 22:30:47 - __main__ - INFO - Processed 1400 attack-pattern entities
+2025-11-04 22:30:48 - knowledge_ingest.opencti_client - INFO - Completed fetching 1494 attack-pattern entities
+2025-11-04 22:30:49 - knowledge_ingest.storage - INFO - Added 94 entities (vector IDs: 1400-1493)
+2025-11-04 22:30:49 - __main__ - INFO - Completed sync for attack-pattern: 1494 entities
+2025-11-04 22:30:49 - __main__ - INFO - Starting sync for entity type: malware
+2025-11-04 22:30:49 - knowledge_ingest.opencti_client - INFO - Fetching malware entities (max: 10000)
+2025-11-04 22:30:50 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1494-1593)
+2025-11-04 22:30:50 - __main__ - INFO - Processed 100 malware entities
+2025-11-04 22:30:52 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1594-1693)
+2025-11-04 22:30:52 - __main__ - INFO - Processed 200 malware entities
+2025-11-04 22:30:53 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1694-1793)
+2025-11-04 22:30:53 - __main__ - INFO - Processed 300 malware entities
+2025-11-04 22:30:54 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1794-1893)
+2025-11-04 22:30:54 - __main__ - INFO - Processed 400 malware entities
+2025-11-04 22:30:55 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1894-1993)
+2025-11-04 22:30:55 - __main__ - INFO - Processed 500 malware entities
+2025-11-04 22:30:57 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1994-2093)
+2025-11-04 22:30:57 - __main__ - INFO - Processed 600 malware entities
+2025-11-04 22:30:58 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2094-2193)
+2025-11-04 22:30:58 - __main__ - INFO - Processed 700 malware entities
+2025-11-04 22:30:59 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2194-2293)
+2025-11-04 22:30:59 - __main__ - INFO - Processed 800 malware entities
+2025-11-04 22:30:59 - knowledge_ingest.opencti_client - INFO - Completed fetching 816 malware entities
+2025-11-04 22:31:00 - knowledge_ingest.storage - INFO - Added 16 entities (vector IDs: 2294-2309)
+2025-11-04 22:31:00 - __main__ - INFO - Completed sync for malware: 816 entities
+2025-11-04 22:31:00 - __main__ - INFO - Starting sync for entity type: course-of-action
+2025-11-04 22:31:00 - knowledge_ingest.opencti_client - INFO - Fetching course-of-action entities (max: 10000)
+2025-11-04 22:31:00 - __main__ - ERROR - Sync failed for course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: Cannot query field "x_mitre_version" on type "CourseOfAction". Did you mean "x_mitre_id", "draftVersion", or "spec_version"?
+2025-11-04 22:31:00 - __main__ - ERROR - Failed to sync course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: Cannot query field "x_mitre_version" on type "CourseOfAction". Did you mean "x_mitre_id", "draftVersion", or "spec_version"?
+2025-11-04 22:31:00 - __main__ - INFO - Starting sync for entity type: intrusion-set
+2025-11-04 22:31:00 - knowledge_ingest.opencti_client - INFO - Fetching intrusion-set entities (max: 10000)
+2025-11-04 22:31:01 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2310-2409)
+2025-11-04 22:31:01 - __main__ - INFO - Processed 100 intrusion-set entities
+2025-11-04 22:31:01 - knowledge_ingest.opencti_client - INFO - Completed fetching 183 intrusion-set entities
+2025-11-04 22:31:03 - knowledge_ingest.storage - INFO - Added 83 entities (vector IDs: 2410-2492)
+2025-11-04 22:31:03 - __main__ - INFO - Completed sync for intrusion-set: 183 entities
+2025-11-04 22:31:03 - __main__ - INFO - Starting sync for entity type: indicator
+2025-11-04 22:31:03 - knowledge_ingest.opencti_client - INFO - Fetching indicator entities (max: 10000)
+2025-11-04 22:31:03 - knowledge_ingest.opencti_client - INFO - Completed fetching 0 indicator entities
+2025-11-04 22:31:03 - __main__ - INFO - Completed sync for indicator: 0 entities
+2025-11-04 22:31:03 - __main__ - INFO - Starting sync for entity type: report
+2025-11-04 22:31:03 - knowledge_ingest.opencti_client - INFO - Fetching report entities (max: 10000)
+2025-11-04 22:31:03 - __main__ - ERROR - Sync failed for report: Failed to fetch Report page: Query execution failed: GraphQL errors: Cannot query field "object_refs" on type "Report". Did you mean "objects" or "objectLabel"?
+2025-11-04 22:31:03 - __main__ - ERROR - Failed to sync report: Failed to fetch Report page: Query execution failed: GraphQL errors: Cannot query field "object_refs" on type "Report". Did you mean "objects" or "objectLabel"?
+2025-11-04 22:31:03 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 22:31:03 - __main__ - INFO - ============================================================
+2025-11-04 22:31:03 - __main__ - INFO - Sync Complete
+2025-11-04 22:31:03 - __main__ - INFO - Total entities synced: 2493
+2025-11-04 22:31:03 - __main__ - INFO - Storage: KnowledgeStorage(vectors=2493, dim=384, index=IndexFlatIP)
+2025-11-04 22:31:03 - __main__ - INFO - ============================================================
+2025-11-04 22:33:11 - __main__ - INFO - ============================================================
+2025-11-04 22:33:11 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 22:33:11 - __main__ - INFO - ============================================================
+2025-11-04 22:33:11 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 22:33:11 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 22:33:15 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 22:33:20 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 22:33:20 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 22:33:20 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 22:33:20 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 22:33:20 - knowledge_ingest.storage - INFO - Created new FAISS IndexFlatIP index (dim: 384)
+2025-11-04 22:33:20 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 22:33:20 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-04 22:33:20 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-04 22:33:22 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 0-99)
+2025-11-04 22:33:22 - __main__ - INFO - Processed 100 attack-pattern entities
+2025-11-04 22:33:25 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 100-199)
+2025-11-04 22:33:25 - __main__ - INFO - Processed 200 attack-pattern entities
+2025-11-04 22:33:27 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 200-299)
+2025-11-04 22:33:27 - __main__ - INFO - Processed 300 attack-pattern entities
+2025-11-04 22:33:29 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 300-399)
+2025-11-04 22:33:29 - __main__ - INFO - Processed 400 attack-pattern entities
+2025-11-04 22:33:31 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 400-499)
+2025-11-04 22:33:31 - __main__ - INFO - Processed 500 attack-pattern entities
+2025-11-04 22:33:34 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 500-599)
+2025-11-04 22:33:34 - __main__ - INFO - Processed 600 attack-pattern entities
+2025-11-04 22:33:36 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 600-699)
+2025-11-04 22:33:36 - __main__ - INFO - Processed 700 attack-pattern entities
+2025-11-04 22:33:38 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 700-799)
+2025-11-04 22:33:38 - __main__ - INFO - Processed 800 attack-pattern entities
+2025-11-04 22:33:40 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 800-899)
+2025-11-04 22:33:40 - __main__ - INFO - Processed 900 attack-pattern entities
+2025-11-04 22:33:42 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 900-999)
+2025-11-04 22:33:42 - __main__ - INFO - Processed 1000 attack-pattern entities
+2025-11-04 22:33:43 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1000-1099)
+2025-11-04 22:33:43 - __main__ - INFO - Processed 1100 attack-pattern entities
+2025-11-04 22:33:44 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1100-1199)
+2025-11-04 22:33:44 - __main__ - INFO - Processed 1200 attack-pattern entities
+2025-11-04 22:33:46 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1200-1299)
+2025-11-04 22:33:46 - __main__ - INFO - Processed 1300 attack-pattern entities
+2025-11-04 22:33:47 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1300-1399)
+2025-11-04 22:33:47 - __main__ - INFO - Processed 1400 attack-pattern entities
+2025-11-04 22:33:47 - knowledge_ingest.opencti_client - INFO - Completed fetching 1494 attack-pattern entities
+2025-11-04 22:33:48 - knowledge_ingest.storage - INFO - Added 94 entities (vector IDs: 1400-1493)
+2025-11-04 22:33:48 - __main__ - INFO - Completed sync for attack-pattern: 1494 entities
+2025-11-04 22:33:48 - __main__ - INFO - Starting sync for entity type: malware
+2025-11-04 22:33:48 - knowledge_ingest.opencti_client - INFO - Fetching malware entities (max: 10000)
+2025-11-04 22:33:50 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1494-1593)
+2025-11-04 22:33:50 - __main__ - INFO - Processed 100 malware entities
+2025-11-04 22:33:51 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1594-1693)
+2025-11-04 22:33:51 - __main__ - INFO - Processed 200 malware entities
+2025-11-04 22:33:52 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1694-1793)
+2025-11-04 22:33:52 - __main__ - INFO - Processed 300 malware entities
+2025-11-04 22:33:54 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1794-1893)
+2025-11-04 22:33:54 - __main__ - INFO - Processed 400 malware entities
+2025-11-04 22:33:55 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1894-1993)
+2025-11-04 22:33:55 - __main__ - INFO - Processed 500 malware entities
+2025-11-04 22:33:56 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1994-2093)
+2025-11-04 22:33:56 - __main__ - INFO - Processed 600 malware entities
+2025-11-04 22:33:58 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2094-2193)
+2025-11-04 22:33:58 - __main__ - INFO - Processed 700 malware entities
+2025-11-04 22:33:59 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2194-2293)
+2025-11-04 22:33:59 - __main__ - INFO - Processed 800 malware entities
+2025-11-04 22:33:59 - knowledge_ingest.opencti_client - INFO - Completed fetching 816 malware entities
+2025-11-04 22:33:59 - knowledge_ingest.storage - INFO - Added 16 entities (vector IDs: 2294-2309)
+2025-11-04 22:33:59 - __main__ - INFO - Completed sync for malware: 816 entities
+2025-11-04 22:33:59 - __main__ - INFO - Starting sync for entity type: course-of-action
+2025-11-04 22:33:59 - knowledge_ingest.opencti_client - INFO - Fetching course-of-action entities (max: 10000)
+2025-11-04 22:34:00 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2310-2409)
+2025-11-04 22:34:00 - __main__ - INFO - Processed 100 course-of-action entities
+2025-11-04 22:34:02 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2410-2509)
+2025-11-04 22:34:02 - __main__ - INFO - Processed 200 course-of-action entities
+2025-11-04 22:34:03 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2510-2609)
+2025-11-04 22:34:03 - __main__ - INFO - Processed 300 course-of-action entities
+2025-11-04 22:34:04 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2610-2709)
+2025-11-04 22:34:04 - __main__ - INFO - Processed 400 course-of-action entities
+2025-11-04 22:34:05 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2710-2809)
+2025-11-04 22:34:05 - __main__ - INFO - Processed 500 course-of-action entities
+2025-11-04 22:34:05 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2810-2909)
+2025-11-04 22:34:05 - __main__ - INFO - Processed 600 course-of-action entities
+2025-11-04 22:34:06 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2910-3009)
+2025-11-04 22:34:06 - __main__ - INFO - Processed 700 course-of-action entities
+2025-11-04 22:34:07 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3010-3109)
+2025-11-04 22:34:07 - __main__ - INFO - Processed 800 course-of-action entities
+2025-11-04 22:34:07 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3110-3209)
+2025-11-04 22:34:07 - __main__ - INFO - Processed 900 course-of-action entities
+2025-11-04 22:34:07 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3210-3309)
+2025-11-04 22:34:07 - __main__ - INFO - Processed 1000 course-of-action entities
+2025-11-04 22:34:08 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3310-3409)
+2025-11-04 22:34:08 - __main__ - INFO - Processed 1100 course-of-action entities
+2025-11-04 22:34:09 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3410-3509)
+2025-11-04 22:34:09 - __main__ - INFO - Processed 1200 course-of-action entities
+2025-11-04 22:34:09 - knowledge_ingest.opencti_client - INFO - Completed fetching 1211 course-of-action entities
+2025-11-04 22:34:09 - knowledge_ingest.storage - INFO - Added 11 entities (vector IDs: 3510-3520)
+2025-11-04 22:34:09 - __main__ - INFO - Completed sync for course-of-action: 1211 entities
+2025-11-04 22:34:09 - __main__ - INFO - Starting sync for entity type: intrusion-set
+2025-11-04 22:34:09 - knowledge_ingest.opencti_client - INFO - Fetching intrusion-set entities (max: 10000)
+2025-11-04 22:34:11 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3521-3620)
+2025-11-04 22:34:11 - __main__ - INFO - Processed 100 intrusion-set entities
+2025-11-04 22:34:11 - knowledge_ingest.opencti_client - INFO - Completed fetching 183 intrusion-set entities
+2025-11-04 22:34:12 - knowledge_ingest.storage - INFO - Added 83 entities (vector IDs: 3621-3703)
+2025-11-04 22:34:12 - __main__ - INFO - Completed sync for intrusion-set: 183 entities
+2025-11-04 22:34:12 - __main__ - INFO - Starting sync for entity type: indicator
+2025-11-04 22:34:12 - knowledge_ingest.opencti_client - INFO - Fetching indicator entities (max: 10000)
+2025-11-04 22:34:12 - knowledge_ingest.opencti_client - INFO - Completed fetching 0 indicator entities
+2025-11-04 22:34:12 - __main__ - INFO - Completed sync for indicator: 0 entities
+2025-11-04 22:34:12 - __main__ - INFO - Starting sync for entity type: report
+2025-11-04 22:34:12 - knowledge_ingest.opencti_client - INFO - Fetching report entities (max: 10000)
+2025-11-04 22:34:12 - __main__ - ERROR - Sync failed for report: Failed to fetch Report page: Query execution failed: GraphQL errors: Cannot query field "id" on type "StixObjectOrStixRelationship". Did you mean to use an inline fragment on "BasicObject", "StixObject", "StixCoreObject", "StixDomainObject", or "StixCyberObservable"?, Cannot query field "entity_type" on type "StixObjectOrStixRelationship". Did you mean to use an inline fragment on "BasicObject", "StixObject", "StixCoreObject", "StixDomainObject", or "StixCyberObservable"?, Cannot query field "name" on type "StixDomainObject". Did you mean to use an inline fragment on "Identity", "Location", "Case", "ThreatActor", or "AdministrativeArea"?
+2025-11-04 22:34:12 - __main__ - ERROR - Failed to sync report: Failed to fetch Report page: Query execution failed: GraphQL errors: Cannot query field "id" on type "StixObjectOrStixRelationship". Did you mean to use an inline fragment on "BasicObject", "StixObject", "StixCoreObject", "StixDomainObject", or "StixCyberObservable"?, Cannot query field "entity_type" on type "StixObjectOrStixRelationship". Did you mean to use an inline fragment on "BasicObject", "StixObject", "StixCoreObject", "StixDomainObject", or "StixCyberObservable"?, Cannot query field "name" on type "StixDomainObject". Did you mean to use an inline fragment on "Identity", "Location", "Case", "ThreatActor", or "AdministrativeArea"?
+2025-11-04 22:34:12 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 22:34:12 - __main__ - INFO - ============================================================
+2025-11-04 22:34:12 - __main__ - INFO - Sync Complete
+2025-11-04 22:34:12 - __main__ - INFO - Total entities synced: 3704
+2025-11-04 22:34:12 - __main__ - INFO - Storage: KnowledgeStorage(vectors=3704, dim=384, index=IndexFlatIP)
+2025-11-04 22:34:12 - __main__ - INFO - ============================================================
+2025-11-04 22:36:20 - __main__ - INFO - ============================================================
+2025-11-04 22:36:20 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-04 22:36:20 - __main__ - INFO - ============================================================
+2025-11-04 22:36:20 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-04 22:36:20 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 22:36:24 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 22:36:28 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 22:36:28 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 22:36:28 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 22:36:28 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 22:36:28 - knowledge_ingest.storage - INFO - Created new FAISS IndexFlatIP index (dim: 384)
+2025-11-04 22:36:28 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 22:36:28 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-04 22:36:28 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-04 22:36:31 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 0-99)
+2025-11-04 22:36:31 - __main__ - INFO - Processed 100 attack-pattern entities
+2025-11-04 22:36:33 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 100-199)
+2025-11-04 22:36:33 - __main__ - INFO - Processed 200 attack-pattern entities
+2025-11-04 22:36:35 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 200-299)
+2025-11-04 22:36:35 - __main__ - INFO - Processed 300 attack-pattern entities
+2025-11-04 22:36:38 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 300-399)
+2025-11-04 22:36:38 - __main__ - INFO - Processed 400 attack-pattern entities
+2025-11-04 22:36:40 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 400-499)
+2025-11-04 22:36:40 - __main__ - INFO - Processed 500 attack-pattern entities
+2025-11-04 22:36:42 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 500-599)
+2025-11-04 22:36:42 - __main__ - INFO - Processed 600 attack-pattern entities
+2025-11-04 22:36:44 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 600-699)
+2025-11-04 22:36:44 - __main__ - INFO - Processed 700 attack-pattern entities
+2025-11-04 22:36:46 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 700-799)
+2025-11-04 22:36:46 - __main__ - INFO - Processed 800 attack-pattern entities
+2025-11-04 22:36:48 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 800-899)
+2025-11-04 22:36:48 - __main__ - INFO - Processed 900 attack-pattern entities
+2025-11-04 22:36:50 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 900-999)
+2025-11-04 22:36:50 - __main__ - INFO - Processed 1000 attack-pattern entities
+2025-11-04 22:36:51 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1000-1099)
+2025-11-04 22:36:51 - __main__ - INFO - Processed 1100 attack-pattern entities
+2025-11-04 22:36:52 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1100-1199)
+2025-11-04 22:36:52 - __main__ - INFO - Processed 1200 attack-pattern entities
+2025-11-04 22:36:54 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1200-1299)
+2025-11-04 22:36:54 - __main__ - INFO - Processed 1300 attack-pattern entities
+2025-11-04 22:36:55 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1300-1399)
+2025-11-04 22:36:55 - __main__ - INFO - Processed 1400 attack-pattern entities
+2025-11-04 22:36:55 - knowledge_ingest.opencti_client - INFO - Completed fetching 1494 attack-pattern entities
+2025-11-04 22:36:56 - knowledge_ingest.storage - INFO - Added 94 entities (vector IDs: 1400-1493)
+2025-11-04 22:36:56 - __main__ - INFO - Completed sync for attack-pattern: 1494 entities
+2025-11-04 22:36:56 - __main__ - INFO - Starting sync for entity type: malware
+2025-11-04 22:36:56 - knowledge_ingest.opencti_client - INFO - Fetching malware entities (max: 10000)
+2025-11-04 22:36:58 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1494-1593)
+2025-11-04 22:36:58 - __main__ - INFO - Processed 100 malware entities
+2025-11-04 22:36:59 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1594-1693)
+2025-11-04 22:36:59 - __main__ - INFO - Processed 200 malware entities
+2025-11-04 22:37:00 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1694-1793)
+2025-11-04 22:37:00 - __main__ - INFO - Processed 300 malware entities
+2025-11-04 22:37:02 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1794-1893)
+2025-11-04 22:37:02 - __main__ - INFO - Processed 400 malware entities
+2025-11-04 22:37:03 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1894-1993)
+2025-11-04 22:37:03 - __main__ - INFO - Processed 500 malware entities
+2025-11-04 22:37:04 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 1994-2093)
+2025-11-04 22:37:04 - __main__ - INFO - Processed 600 malware entities
+2025-11-04 22:37:05 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2094-2193)
+2025-11-04 22:37:05 - __main__ - INFO - Processed 700 malware entities
+2025-11-04 22:37:07 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2194-2293)
+2025-11-04 22:37:07 - __main__ - INFO - Processed 800 malware entities
+2025-11-04 22:37:07 - knowledge_ingest.opencti_client - INFO - Completed fetching 816 malware entities
+2025-11-04 22:37:07 - knowledge_ingest.storage - INFO - Added 16 entities (vector IDs: 2294-2309)
+2025-11-04 22:37:07 - __main__ - INFO - Completed sync for malware: 816 entities
+2025-11-04 22:37:07 - __main__ - INFO - Starting sync for entity type: course-of-action
+2025-11-04 22:37:07 - knowledge_ingest.opencti_client - INFO - Fetching course-of-action entities (max: 10000)
+2025-11-04 22:37:08 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2310-2409)
+2025-11-04 22:37:08 - __main__ - INFO - Processed 100 course-of-action entities
+2025-11-04 22:37:10 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2410-2509)
+2025-11-04 22:37:10 - __main__ - INFO - Processed 200 course-of-action entities
+2025-11-04 22:37:11 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2510-2609)
+2025-11-04 22:37:11 - __main__ - INFO - Processed 300 course-of-action entities
+2025-11-04 22:37:12 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2610-2709)
+2025-11-04 22:37:12 - __main__ - INFO - Processed 400 course-of-action entities
+2025-11-04 22:37:12 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2710-2809)
+2025-11-04 22:37:12 - __main__ - INFO - Processed 500 course-of-action entities
+2025-11-04 22:37:13 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2810-2909)
+2025-11-04 22:37:13 - __main__ - INFO - Processed 600 course-of-action entities
+2025-11-04 22:37:14 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 2910-3009)
+2025-11-04 22:37:14 - __main__ - INFO - Processed 700 course-of-action entities
+2025-11-04 22:37:14 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3010-3109)
+2025-11-04 22:37:14 - __main__ - INFO - Processed 800 course-of-action entities
+2025-11-04 22:37:15 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3110-3209)
+2025-11-04 22:37:15 - __main__ - INFO - Processed 900 course-of-action entities
+2025-11-04 22:37:15 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3210-3309)
+2025-11-04 22:37:15 - __main__ - INFO - Processed 1000 course-of-action entities
+2025-11-04 22:37:16 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3310-3409)
+2025-11-04 22:37:16 - __main__ - INFO - Processed 1100 course-of-action entities
+2025-11-04 22:37:17 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3410-3509)
+2025-11-04 22:37:17 - __main__ - INFO - Processed 1200 course-of-action entities
+2025-11-04 22:37:17 - knowledge_ingest.opencti_client - INFO - Completed fetching 1211 course-of-action entities
+2025-11-04 22:37:17 - knowledge_ingest.storage - INFO - Added 11 entities (vector IDs: 3510-3520)
+2025-11-04 22:37:17 - __main__ - INFO - Completed sync for course-of-action: 1211 entities
+2025-11-04 22:37:17 - __main__ - INFO - Starting sync for entity type: intrusion-set
+2025-11-04 22:37:17 - knowledge_ingest.opencti_client - INFO - Fetching intrusion-set entities (max: 10000)
+2025-11-04 22:37:18 - knowledge_ingest.storage - INFO - Added 100 entities (vector IDs: 3521-3620)
+2025-11-04 22:37:18 - __main__ - INFO - Processed 100 intrusion-set entities
+2025-11-04 22:37:18 - knowledge_ingest.opencti_client - INFO - Completed fetching 183 intrusion-set entities
+2025-11-04 22:37:20 - knowledge_ingest.storage - INFO - Added 83 entities (vector IDs: 3621-3703)
+2025-11-04 22:37:20 - __main__ - INFO - Completed sync for intrusion-set: 183 entities
+2025-11-04 22:37:20 - __main__ - INFO - Starting sync for entity type: indicator
+2025-11-04 22:37:20 - knowledge_ingest.opencti_client - INFO - Fetching indicator entities (max: 10000)
+2025-11-04 22:37:20 - knowledge_ingest.opencti_client - INFO - Completed fetching 0 indicator entities
+2025-11-04 22:37:20 - __main__ - INFO - Completed sync for indicator: 0 entities
+2025-11-04 22:37:20 - __main__ - INFO - Starting sync for entity type: report
+2025-11-04 22:37:20 - knowledge_ingest.opencti_client - INFO - Fetching report entities (max: 10000)
+2025-11-04 22:37:20 - knowledge_ingest.opencti_client - INFO - Completed fetching 0 report entities
+2025-11-04 22:37:20 - __main__ - INFO - Completed sync for report: 0 entities
+2025-11-04 22:37:20 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 22:37:20 - __main__ - INFO - ============================================================
+2025-11-04 22:37:20 - __main__ - INFO - Sync Complete
+2025-11-04 22:37:20 - __main__ - INFO - Total entities synced: 3704
+2025-11-04 22:37:20 - __main__ - INFO - Storage: KnowledgeStorage(vectors=3704, dim=384, index=IndexFlatIP)
+2025-11-04 22:37:20 - __main__ - INFO - ============================================================
