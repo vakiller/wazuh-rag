@@ -1,0 +1,59 @@
+# Phase 3: LLM Analysis and Reporting Configuration
+
+# LLM Settings (Ollama)
+llm:
+  base_url: "http://192.168.1.11:11434"
+  model: "llama3.1:8b-instruct-q4_K_M"
+  temperature: 0.1              # Low temperature for consistent analysis
+  timeout: 120                  # Request timeout in seconds
+  max_retries: 3                # Retry on failure
+
+# Analysis Window
+analysis:
+  window_minutes: 30            # Analyze last N minutes of alerts
+  min_alerts_threshold: 1       # Minimum alerts to trigger analysis
+  schedule_interval: 1800       # Run every 30 minutes (seconds)
+
+# Database Paths
+database:
+  path: "./wazuh_alerts.db"     # Main SQLite database (from Phase 1)
+  alerts_table: "alerts"
+  knowledge_table: "knowledge"  # From Phase 2
+  reports_table: "reports"
+
+# FAISS Settings
+faiss:
+  index_path: "./data/faiss_index/knowledge.index"
+  metadata_db: "./data/faiss_index/knowledge.db"
+  top_k: 5                      # Number of similar knowledge items to retrieve
+  score_threshold: 0.3          # Minimum similarity score
+
+# Embedding Model (must match Phase 2)
+embedding:
+  model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  device: "cpu"
+  normalize: true
+
+# Risk Scoring Weights
+risk_scoring:
+  high_severity_weight: 15      # Critical/High alerts
+  medium_severity_weight: 8     # Medium alerts
+  low_severity_weight: 3        # Low alerts
+  unique_tactics_multiplier: 5  # Per unique MITRE tactic
+  privilege_escalation_bonus: 10
+  lateral_movement_bonus: 10
+  credential_access_bonus: 8
+  max_score: 100                # Cap at 100
+
+# Output Settings
+output:
+  include_raw_alerts: false     # Include raw alert JSON in report
+  max_iocs_per_report: 50       # Limit IOCs to prevent huge reports
+  log_level: "INFO"             # DEBUG, INFO, WARNING, ERROR
+  log_file: "./logs/phase3_analysis.log"
+
+# Prompt Engineering
+prompts:
+  max_evidence_chars: 8000      # Truncate evidence if too long
+  max_context_chars: 6000       # Truncate retrieved knowledge if too long
+  include_confidence: true      # Ask LLM for confidence scores

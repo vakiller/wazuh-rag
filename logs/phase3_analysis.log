@@ -1,0 +1,123 @@
+2025-11-04 23:02:46,441 - __main__ - INFO - ================================================================================
+2025-11-04 23:02:46,441 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-04 23:02:46,441 - __main__ - INFO - ================================================================================
+2025-11-04 23:02:46,448 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-04 23:02:46,448 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-04 23:02:46,448 - __main__ - ERROR - Error: Database not found: ./rag.db
+Traceback (most recent call last):
+  File "/home/aid3n/security_projects/rag_wazuh/analyze_threats.py", line 208, in main
+    analyzer = ThreatAnalyzer(config_path=args.config)
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 53, in __init__
+    self._init_components()
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 70, in _init_components
+    self.alert_retriever = AlertRetriever(db_path)
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/retrieval.py", line 37, in __init__
+    raise FileNotFoundError(f"Database not found: {db_path}")
+FileNotFoundError: Database not found: ./rag.db
+2025-11-04 23:03:32,165 - __main__ - INFO - ================================================================================
+2025-11-04 23:03:32,165 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-04 23:03:32,165 - __main__ - INFO - ================================================================================
+2025-11-04 23:03:32,171 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-04 23:03:32,172 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-04 23:03:32,172 - __main__ - ERROR - Error: Database not found: ./rag.db
+Traceback (most recent call last):
+  File "/home/aid3n/security_projects/rag_wazuh/analyze_threats.py", line 208, in main
+    analyzer = ThreatAnalyzer(config_path=args.config)
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 53, in __init__
+    self._init_components()
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 70, in _init_components
+    self.alert_retriever = AlertRetriever(db_path)
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/retrieval.py", line 37, in __init__
+    raise FileNotFoundError(f"Database not found: {db_path}")
+FileNotFoundError: Database not found: ./rag.db
+2025-11-04 23:04:42,338 - __main__ - INFO - ================================================================================
+2025-11-04 23:04:42,338 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-04 23:04:42,338 - __main__ - INFO - ================================================================================
+2025-11-04 23:04:42,345 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-04 23:04:42,345 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-04 23:04:42,345 - llm_analysis.retrieval - INFO - Connected to database: ./wazuh_alerts.db
+2025-11-04 23:04:42,345 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-04 23:04:42,527 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 23:04:47,557 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 23:04:50,900 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 23:04:50,900 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 23:04:50,902 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 23:04:50,939 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 23:04:50,954 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-04 23:04:50,954 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 23:04:50,955 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (3704 vectors in index)
+2025-11-04 23:04:50,955 - llm_analysis.llm_client - INFO - Initializing LLM client: llama3.1:8b-instruct-q4_K_M at http://192.168.1.11:11434
+2025-11-04 23:04:50,955 - __main__ - ERROR - Error: langchain-community not installed. Install with: pip install langchain-community
+Traceback (most recent call last):
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/llm_client.py", line 51, in _init_llm
+    from langchain_community.llms import Ollama
+ModuleNotFoundError: No module named 'langchain_community'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/aid3n/security_projects/rag_wazuh/analyze_threats.py", line 208, in main
+    analyzer = ThreatAnalyzer(config_path=args.config)
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 53, in __init__
+    self._init_components()
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 81, in _init_components
+    self.llm_client = LLMClient(
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/llm_client.py", line 46, in __init__
+    self._init_llm()
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/llm_client.py", line 53, in _init_llm
+    raise ImportError(
+ImportError: langchain-community not installed. Install with: pip install langchain-community
+2025-11-04 23:05:42,851 - __main__ - INFO - ================================================================================
+2025-11-04 23:05:42,851 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-04 23:05:42,851 - __main__ - INFO - ================================================================================
+2025-11-04 23:05:42,858 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-04 23:05:42,858 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-04 23:05:42,858 - llm_analysis.retrieval - INFO - Connected to database: ./wazuh_alerts.db
+2025-11-04 23:05:42,858 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-04 23:05:43,056 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 23:05:47,947 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 23:05:53,077 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 23:05:53,077 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 23:05:53,079 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 23:05:53,114 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 23:05:53,128 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-04 23:05:53,129 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 23:05:53,129 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (3704 vectors in index)
+2025-11-04 23:05:53,129 - llm_analysis.llm_client - INFO - Initializing LLM client: llama3.1:8b-instruct-q4_K_M at http://192.168.1.11:11434
+2025-11-04 23:05:53,896 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-04 23:05:53,906 - llm_analysis.storage - INFO - Reports table initialized
+2025-11-04 23:05:53,906 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-04 23:05:53,907 - llm_analysis.analyze_window - INFO - Testing LLM connection...
+2025-11-04 23:05:58,377 - llm_analysis.llm_client - INFO - LLM connection test successful: OK
+2025-11-04 23:05:58,378 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-04 23:05:58,384 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 23:05:58,384 - llm_analysis.storage - INFO - Database connection closed
+2025-11-04 23:05:58,384 - llm_analysis.analyze_window - INFO - Threat Analyzer closed
+2025-11-04 23:06:20,910 - __main__ - INFO - ================================================================================
+2025-11-04 23:06:20,910 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-04 23:06:20,910 - __main__ - INFO - ================================================================================
+2025-11-04 23:06:20,917 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-04 23:06:20,917 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-04 23:06:20,917 - llm_analysis.retrieval - INFO - Connected to database: ./wazuh_alerts.db
+2025-11-04 23:06:20,917 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-04 23:06:21,101 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-04 23:06:26,084 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-04 23:06:29,390 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-04 23:06:29,390 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-04 23:06:29,392 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-04 23:06:29,433 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-04 23:06:29,448 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-04 23:06:29,449 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-04 23:06:29,449 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (3704 vectors in index)
+2025-11-04 23:06:29,449 - llm_analysis.llm_client - INFO - Initializing LLM client: llama3.1:8b-instruct-q4_K_M at http://192.168.1.11:11434
+2025-11-04 23:06:30,208 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-04 23:06:30,208 - llm_analysis.storage - INFO - Reports table initialized
+2025-11-04 23:06:30,208 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-04 23:06:30,208 - llm_analysis.analyze_window - INFO - Starting analysis for window: 2025-11-04T15:36:30.208972 to 2025-11-04T16:06:30.208972
+2025-11-04 23:06:30,209 - llm_analysis.retrieval - INFO - Querying alerts from 2025-11-04T15:36:30.208972 to 2025-11-04T16:06:30.208972
+2025-11-04 23:06:30,209 - llm_analysis.retrieval - INFO - Retrieved 0 alerts from database
+2025-11-04 23:06:30,209 - llm_analysis.analyze_window - INFO - Insufficient alerts (0) for analysis, threshold: 1
+2025-11-04 23:06:30,209 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-04 23:06:30,224 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-04 23:06:30,224 - llm_analysis.storage - INFO - Database connection closed
+2025-11-04 23:06:30,224 - llm_analysis.analyze_window - INFO - Threat Analyzer closed

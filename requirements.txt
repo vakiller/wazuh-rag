@@ -33,6 +33,6 @@ urllib3>=1.26.0,<2.0.0       # HTTP library (must be <2.0.0 for opensearch-py co
 # black>=23.0.0
 # flake8>=6.0.0
 
-# Future RAG/LLM dependencies (Phase 3+)
-# langchain>=0.1.0
-# openai>=1.0.0
+# Phase 3: LLM Analysis dependencies
+langchain-community>=0.3.0   # LangChain community integrations (Ollama)
+langchain-core>=0.3.0        # LangChain core library
