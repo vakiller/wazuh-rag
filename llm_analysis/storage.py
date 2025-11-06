@@ -52,6 +52,7 @@ class ReportStorage:
                 alerts_count INTEGER NOT NULL,
                 mitre_list TEXT,
                 summary TEXT,
+                severity TEXT,
                 risk_score INTEGER,
                 details JSON,
                 iocs JSON,
@@ -59,6 +60,14 @@ class ReportStorage:
                 faiss_context TEXT
             )
         """)
+
+        # Add severity column to existing tables (Phase 4 enhancement)
+        try:
+            self.conn.execute("ALTER TABLE reports ADD COLUMN severity TEXT")
+            logger.info("Added severity column to reports table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            pass
 
         # Create index for faster queries
         self.conn.execute("""
@@ -110,6 +119,13 @@ class ReportStorage:
 
         # Ensure summary is a string
         summary = str(extracted.get('summary', '')) if extracted.get('summary') else ''
+
+        # Extract severity (Phase 4)
+        severity = extracted.get('severity', 'Medium')
+        # Validate severity is one of the allowed values
+        if severity not in ['Low', 'Medium', 'High', 'Critical']:
+            logger.warning(f"Invalid severity value '{severity}', defaulting to 'Medium'")
+            severity = 'Medium'
 
         # Convert to JSON strings for database storage - ensure they're always strings
         try:
@@ -168,12 +184,13 @@ class ReportStorage:
         # SQLite only accepts: NULL, INTEGER, REAL, TEXT, BLOB
         mitre_list = str(mitre_list) if mitre_list is not None else "[]"
         summary = str(summary) if summary is not None else ""
+        severity = str(severity) if severity is not None else "Medium"
         iocs = str(iocs) if iocs is not None else "{}"
         suggested_actions = str(suggested_actions) if suggested_actions is not None else "[]"
         details = str(details) if details is not None else "{}"
         faiss_context_str = str(faiss_context_str) if faiss_context_str is not None else "[]"
 
-        # Build params tuple
+        # Build params tuple (Phase 4 includes severity)
         params = (
             window_start_str,
             window_end_str,
@@ -182,6 +199,7 @@ class ReportStorage:
             alerts_count,
             mitre_list,
             summary,
+            severity,
             risk_score,
             details,
             iocs,
@@ -190,15 +208,15 @@ class ReportStorage:
         )
 
         logger.debug(f"Parameter types: {[type(p).__name__ for p in params]}")
-        logger.debug(f"Param 6 (mitre_list): type={type(mitre_list)}, len={len(mitre_list)}")
+        logger.debug(f"Severity: {severity}, Risk Score: {risk_score}")
 
-        # Insert report
+        # Insert report (Phase 4 schema with severity)
         cursor = self.conn.execute("""
             INSERT INTO reports (
                 window_start, window_end, hosts, agents, alerts_count,
-                mitre_list, summary, risk_score, details, iocs,
+                mitre_list, summary, severity, risk_score, details, iocs,
                 suggested_actions, faiss_context
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, params)
 
         self.conn.commit()
@@ -206,53 +224,86 @@ class ReportStorage:
 
         logger.info(
             f"Saved report {report_id} for window {window_start_str} to {window_end_str} "
-            f"({alerts_count} alerts, risk score: {risk_score})"
+            f"({alerts_count} alerts, severity: {severity}, risk score: {risk_score})"
         )
 
         return report_id
 
     def _extract_fields_from_llm_output(self, llm_output: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Extract fields from LLM output in the expected format
+        Extract fields from LLM output in the expected Phase 4 format
 
         Args:
             llm_output: Raw LLM output dictionary
 
         Returns:
-            Dict with extracted fields: summary, mitre_list, iocs, suggested_actions
+            Dict with extracted fields for Phase 4
         """
-        # Expected format from prompt:
+        # Phase 4 expected format:
         # {
         #   "summary": "...",
+        #   "severity": "Low|Medium|High|Critical",
+        #   "timeline": [{timestamp, host, tactic, technique, description}],
         #   "mitre_list": [{technique_id, technique_name, tactic}],
-        #   "iocs": {ips: [], hashes: [], domains: [], file_paths: [], accounts: [], processes: []},
-        #   "suggested_actions": [{step, action, priority}],
+        #   "iocs": {ips: [], users: [], hashes: [], domains: [], file_paths: [], registry_keys: [], processes: [], commands: []},
+        #   "suggested_actions": {containment: [], eradication: [], recovery: []},
+        #   "business_impact": {affected_systems, operational_risk, data_integrity_risk, domain_wide_risk},
+        #   "evidence_map": [{finding, alert_ids, timestamps, hosts, knowledge_refs}],
+        #   "detection_recommendations": [{type, description}],
         #   ...
         # }
 
         result = {
             'summary': llm_output.get('summary', llm_output.get('tldr', '')),
+            'severity': llm_output.get('severity', 'Medium'),
             'mitre_list': llm_output.get('mitre_list', []),
             'iocs': llm_output.get('iocs', {}),
-            'suggested_actions': llm_output.get('suggested_actions', [])
+            'suggested_actions': llm_output.get('suggested_actions', {}),
+            'timeline': llm_output.get('timeline', []),
+            'business_impact': llm_output.get('business_impact', {}),
+            'evidence_map': llm_output.get('evidence_map', []),
+            'detection_recommendations': llm_output.get('detection_recommendations', [])
         }
 
-        # Ensure iocs has the correct structure even if empty
+        # Ensure iocs has the Phase 4 structure
         if not isinstance(result['iocs'], dict):
             result['iocs'] = {}
 
-        # Ensure all required IOC fields exist
+        # Ensure all required IOC fields exist (Phase 4 expanded)
         ioc_template = {
             'ips': [],
+            'users': [],
             'hashes': [],
             'domains': [],
             'file_paths': [],
-            'accounts': [],
-            'processes': []
+            'registry_keys': [],
+            'processes': [],
+            'commands': []
         }
         for key, default_value in ioc_template.items():
             if key not in result['iocs']:
                 result['iocs'][key] = default_value
+
+        # Ensure suggested_actions has Phase 4 structure (object with 3 phases)
+        if not isinstance(result['suggested_actions'], dict):
+            result['suggested_actions'] = {'containment': [], 'eradication': [], 'recovery': []}
+        else:
+            for phase in ['containment', 'eradication', 'recovery']:
+                if phase not in result['suggested_actions']:
+                    result['suggested_actions'][phase] = []
+
+        # Ensure business_impact has proper structure
+        if not isinstance(result['business_impact'], dict):
+            result['business_impact'] = {}
+        impact_template = {
+            'affected_systems': [],
+            'operational_risk': '',
+            'data_integrity_risk': '',
+            'domain_wide_risk': ''
+        }
+        for key, default_value in impact_template.items():
+            if key not in result['business_impact']:
+                result['business_impact'][key] = default_value
 
         return result
 

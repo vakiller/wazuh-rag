@@ -44,7 +44,7 @@ def setup_logging(log_level: str = "INFO"):
 
 
 def print_report(report: dict, detailed: bool = False):
-    """Pretty print a report"""
+    """Pretty print a report (Phase 4 enhanced)"""
     print("\n" + "=" * 80)
     print(f"THREAT ANALYSIS REPORT #{report['id']}")
     print("=" * 80)
@@ -52,6 +52,16 @@ def print_report(report: dict, detailed: bool = False):
     print(f"\nCreated: {report['created_at']}")
     print(f"Window: {report['window_start']} to {report['window_end']}")
     print(f"Alerts Analyzed: {report['alerts_count']}")
+
+    # Phase 4: Show Severity prominently
+    severity = report.get('severity', 'N/A')
+    severity_icon = {
+        'Critical': '🔴',
+        'High': '🟠',
+        'Medium': '🟡',
+        'Low': '🟢'
+    }.get(severity, '⚪')
+    print(f"Severity: {severity_icon} {severity}")
     print(f"Risk Score: {report['risk_score']}/100")
 
     if report.get('hosts'):
@@ -59,8 +69,13 @@ def print_report(report: dict, detailed: bool = False):
     if report.get('agents'):
         print(f"Affected Agents: {report['agents']}")
 
+    # Phase 4: TL;DR at the top
+    tldr = report.get('details', {}).get('tldr')
+    if tldr:
+        print(f"\n💡 TL;DR: {tldr}")
+
     print("\n" + "-" * 80)
-    print("SUMMARY")
+    print("INCIDENT SUMMARY")
     print("-" * 80)
     print(report.get('summary', 'N/A'))
 
@@ -77,6 +92,25 @@ def print_report(report: dict, detailed: bool = False):
             else:
                 print(f"  - {item}")
 
+    # Phase 4: Attack Timeline
+    timeline = report.get('details', {}).get('timeline', [])
+    if timeline and detailed:
+        print("\n" + "-" * 80)
+        print("ATTACK TIMELINE (Chronological)")
+        print("-" * 80)
+        for event in timeline[:10]:  # Show first 10 events
+            if isinstance(event, dict):
+                timestamp = event.get('timestamp', 'N/A')
+                host = event.get('host', 'N/A')
+                tactic = event.get('tactic', 'N/A')
+                technique = event.get('technique', 'N/A')
+                description = event.get('description', 'N/A')
+                print(f"  [{timestamp}] {host}")
+                print(f"    {tactic} → {technique}")
+                print(f"    {description}\n")
+        if len(timeline) > 10:
+            print(f"  ... and {len(timeline) - 10} more events")
+
     # Predictions
     predictions = report.get('details', {}).get('predictions', [])
     if predictions:
@@ -84,42 +118,141 @@ def print_report(report: dict, detailed: bool = False):
         print("PREDICTED NEXT ACTIONS")
         print("-" * 80)
         for pred in predictions[:3]:
-            print(f"  [{pred.get('confidence', 'N/A')}] {pred.get('action', 'N/A')}")
-            if detailed and pred.get('reasoning'):
-                print(f"      Reasoning: {pred.get('reasoning')}")
+            if isinstance(pred, dict):
+                print(f"  [{pred.get('confidence', 'N/A')}] {pred.get('action', 'N/A')}")
+                if detailed and pred.get('reasoning'):
+                    print(f"      Reasoning: {pred.get('reasoning')}")
+            else:
+                print(f"  - {pred}")
 
-    # Suggested Actions
-    actions = report.get('suggested_actions', [])
+    # Phase 4: Incident Response Workflow (Containment/Eradication/Recovery)
+    actions = report.get('suggested_actions', {})
     if actions:
         print("\n" + "-" * 80)
-        print("RECOMMENDED ACTIONS")
+        print("INCIDENT RESPONSE WORKFLOW")
         print("-" * 80)
-        for action in actions:
-            if isinstance(action, dict):
-                step = action.get('step', '?')
-                priority = action.get('priority', 'N/A')
-                action_text = action.get('action', 'N/A')
-                print(f"  {step}. [{priority}] {action_text}")
-            else:
-                print(f"  - {action}")
 
-    # IOCs
+        # Check if it's the new Phase 4 format (dict with phases) or old format (list)
+        if isinstance(actions, dict):
+            # Phase 4 format
+            for phase, phase_actions in [
+                ('CONTAINMENT', actions.get('containment', [])),
+                ('ERADICATION', actions.get('eradication', [])),
+                ('RECOVERY', actions.get('recovery', []))
+            ]:
+                if phase_actions:
+                    print(f"\n  {phase}:")
+                    for i, action in enumerate(phase_actions, 1):
+                        if isinstance(action, dict):
+                            action_text = action.get('action', str(action))
+                        else:
+                            action_text = str(action)
+                        print(f"    {i}. {action_text}")
+        else:
+            # Old format (list)
+            for action in actions:
+                if isinstance(action, dict):
+                    step = action.get('step', '?')
+                    priority = action.get('priority', 'N/A')
+                    action_text = action.get('action', 'N/A')
+                    print(f"  {step}. [{priority}] {action_text}")
+                else:
+                    print(f"  - {action}")
+
+    # Phase 4: Business Impact Assessment
+    business_impact = report.get('details', {}).get('business_impact', {})
+    if business_impact and detailed:
+        print("\n" + "-" * 80)
+        print("BUSINESS IMPACT ASSESSMENT")
+        print("-" * 80)
+
+        affected_systems = business_impact.get('affected_systems', [])
+        if affected_systems:
+            if isinstance(affected_systems, list):
+                print(f"  Affected Systems: {', '.join(str(s) for s in affected_systems)}")
+            else:
+                print(f"  Affected Systems: {affected_systems}")
+
+        if business_impact.get('operational_risk'):
+            print(f"  Operational Risk: {business_impact['operational_risk']}")
+        if business_impact.get('data_integrity_risk'):
+            print(f"  Data Integrity Risk: {business_impact['data_integrity_risk']}")
+        if business_impact.get('domain_wide_risk'):
+            print(f"  Domain-Wide Risk: {business_impact['domain_wide_risk']}")
+
+    # Phase 4: Enhanced IOCs (expanded to 8 types)
     iocs = report.get('iocs', {})
     if iocs and detailed:
         print("\n" + "-" * 80)
         print("INDICATORS OF COMPROMISE")
         print("-" * 80)
-        for ioc_type, values in iocs.items():
+
+        # Phase 4 IOC order: ips, users, hashes, domains, file_paths, registry_keys, processes, commands
+        ioc_order = ['ips', 'users', 'hashes', 'domains', 'file_paths', 'registry_keys', 'processes', 'commands']
+        for ioc_type in ioc_order:
+            values = iocs.get(ioc_type, [])
             if values:
-                print(f"  {ioc_type.upper()}: {', '.join(str(v) for v in values[:5])}")
+                display_name = ioc_type.replace('_', ' ').upper()
+                print(f"  {display_name}: {', '.join(str(v) for v in values[:5])}")
                 if len(values) > 5:
                     print(f"    ... and {len(values) - 5} more")
 
-    # TL;DR
-    tldr = report.get('details', {}).get('tldr')
-    if tldr:
+    # Phase 4: Evidence Map (link findings to alert IDs, timestamps, hosts)
+    evidence_map = report.get('details', {}).get('evidence_map', [])
+    if evidence_map and detailed:
         print("\n" + "-" * 80)
-        print(f"TL;DR: {tldr}")
+        print("EVIDENCE MAP")
+        print("-" * 80)
+        for i, evidence in enumerate(evidence_map[:5], 1):
+            if isinstance(evidence, dict):
+                finding = evidence.get('finding', 'N/A')
+                alert_ids = evidence.get('alert_ids', [])
+                timestamps = evidence.get('timestamps', [])
+                hosts = evidence.get('hosts', [])
+                knowledge_refs = evidence.get('knowledge_refs', [])
+
+                print(f"  {i}. {finding}")
+                if alert_ids:
+                    print(f"     Alert IDs: {', '.join(str(a) for a in alert_ids[:3])}")
+                if timestamps:
+                    print(f"     Timestamps: {', '.join(str(t) for t in timestamps[:2])}")
+                if hosts:
+                    print(f"     Hosts: {', '.join(str(h) for h in hosts[:3])}")
+                if knowledge_refs:
+                    print(f"     Knowledge: {', '.join(str(k) for k in knowledge_refs[:2])}")
+                print()
+        if len(evidence_map) > 5:
+            print(f"  ... and {len(evidence_map) - 5} more evidence items")
+
+    # Phase 4: Detection Recommendations
+    detection_recs = report.get('details', {}).get('detection_recommendations', [])
+    if detection_recs and detailed:
+        print("\n" + "-" * 80)
+        print("DETECTION IMPROVEMENTS")
+        print("-" * 80)
+
+        # Handle both formats: list of dicts OR dict with categorized lists
+        if isinstance(detection_recs, dict):
+            # Format: {sigma_rules: [], wazuh_rules: [], log_sources: []}
+            for category, items in detection_recs.items():
+                if items:
+                    category_name = category.replace('_', ' ').upper()
+                    print(f"\n  {category_name}:")
+                    for item in items[:3]:
+                        print(f"    - {item}")
+                    if len(items) > 3:
+                        print(f"    ... and {len(items) - 3} more")
+        elif isinstance(detection_recs, list):
+            # Format: [{"type": "sigma_rule", "description": "..."}]
+            for rec in detection_recs[:5]:
+                if isinstance(rec, dict):
+                    rec_type = rec.get('type', 'unknown').upper()
+                    description = rec.get('description', 'N/A')
+                    print(f"  [{rec_type}] {description}")
+                else:
+                    print(f"  - {rec}")
+            if len(detection_recs) > 5:
+                print(f"  ... and {len(detection_recs) - 5} more recommendations")
 
     print("=" * 80 + "\n")
 
