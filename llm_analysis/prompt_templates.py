@@ -43,50 +43,49 @@ Your task is to analyze security alerts from Wazuh SIEM along with retrieved thr
 
 7. **Confidence Assessment**: Provide an overall confidence score (0-100) for your analysis
 
-## Output Format:
+## CRITICAL - Output Format Requirements:
 
-You MUST respond with valid JSON only (no markdown, no explanations outside JSON):
+You MUST respond with ONLY valid JSON. No markdown code blocks. No explanations. No additional text before or after the JSON.
 
-```json
-{
-  "summary": "One paragraph incident summary",
+REQUIRED JSON STRUCTURE (you must use EXACTLY these field names):
+
+{{
+  "summary": "STRING - One paragraph incident summary describing what happened, which systems were affected, timeline, and potential impact",
   "mitre_list": [
-    {"technique_id": "T1078", "technique_name": "Valid Accounts", "tactic": "Persistence"},
-    ...
+    {{"technique_id": "T1078", "technique_name": "Valid Accounts", "tactic": "Persistence"}}
   ],
   "predictions": [
-    {"action": "Attacker will attempt...", "confidence": "High", "reasoning": "Because..."},
-    ...
+    {{"action": "Specific predicted next action", "confidence": "High", "reasoning": "Why this action is likely"}}
   ],
   "suggested_actions": [
-    {"step": 1, "action": "Isolate affected host...", "priority": "Critical"},
-    ...
+    {{"step": 1, "action": "Specific actionable step", "priority": "Critical"}}
   ],
   "evidence_map": [
-    {"finding": "Suspicious login", "alert_ids": ["123", "124"], "knowledge_refs": ["attack-pattern:T1078"]},
-    ...
+    {{"finding": "What was found", "alert_ids": ["id1", "id2"], "knowledge_refs": ["ref1"]}}
   ],
-  "iocs": {
-    "ips": ["192.168.1.100", ...],
-    "hashes": ["abc123...", ...],
-    "domains": ["malicious.com", ...],
-    "file_paths": ["/tmp/suspicious", ...],
-    "accounts": ["compromised_user", ...],
-    "processes": ["malware.exe", ...]
-  },
+  "iocs": {{
+    "ips": ["IP addresses as strings"],
+    "hashes": ["File hashes as strings"],
+    "domains": ["Domain names as strings"],
+    "file_paths": ["File paths as strings"],
+    "accounts": ["User account names as strings"],
+    "processes": ["Process names as strings"]
+  }},
   "confidence_overall": 85,
-  "tldr": "One-sentence summary of the threat"
-}
-```
+  "tldr": "One sentence summary"
+}}
 
-## Important Guidelines:
+STRICT RULES:
+1. Return ONLY the JSON object - no markdown, no code blocks, no extra text
+2. All field names must match EXACTLY as shown above
+3. "iocs" must be an object with arrays for: ips, hashes, domains, file_paths, accounts, processes
+4. "mitre_list" must contain objects with: technique_id, technique_name, tactic
+5. "suggested_actions" must contain objects with: step (number), action (string), priority (string)
+6. If a field has no data, use empty array [] or empty string "", but the field must exist
+7. Do NOT use alternative field names like "threat_analysis", "ioc_list", "remediation_steps", etc.
+8. Do NOT nest the structure under other keys
 
-- Base your analysis ONLY on provided evidence and retrieved knowledge
-- Do NOT hallucinate or invent details not present in the data
-- If confidence is low, state that clearly
-- Prioritize actions by urgency
-- Be specific with IOCs - include exact values found in alerts
-- Cross-reference MITRE techniques with observed behaviors
+IMPORTANT: Base your analysis ONLY on the provided evidence and retrieved knowledge. Do NOT hallucinate or invent details not present in the data. Be specific with IOCs - include exact values found in alerts.
 """
 
 
@@ -113,16 +112,26 @@ The following knowledge items were retrieved from OpenCTI threat intelligence da
 
 ## YOUR TASK
 
-Analyze the above evidence and retrieved knowledge to produce a comprehensive threat analysis report in the JSON format specified in your system instructions.
+Analyze the above evidence and retrieved knowledge to produce a comprehensive threat analysis report.
+
+You MUST return ONLY a JSON object with EXACTLY these top-level fields:
+- summary
+- mitre_list
+- predictions
+- suggested_actions
+- evidence_map
+- iocs
+- confidence_overall
+- tldr
 
 Focus on:
 1. What attack is occurring or has occurred
-2. Which MITRE ATT&CK techniques are involved
-3. What the attacker might do next
-4. How to respond and remediate
+2. Which MITRE ATT&CK techniques are involved (extract from alerts and knowledge)
+3. What the attacker might do next (predictions)
+4. How to respond and remediate (suggested_actions)
 5. All IOCs that should be hunted across the network
 
-Remember: Output ONLY valid JSON, no additional text."""
+CRITICAL: Return ONLY the JSON object. No markdown code blocks. No "```json". No explanatory text. Just the pure JSON object starting with {{ and ending with }}."""
 
 
 def format_user_prompt(

@@ -105,12 +105,49 @@ class ReportStorage:
         window_start_str = window_start.isoformat()
         window_end_str = window_end.isoformat()
 
-        # Extract fields from LLM output
-        summary = llm_output.get('summary', '')
-        mitre_list = json.dumps(llm_output.get('mitre_list', []))
-        iocs = json.dumps(llm_output.get('iocs', []))
-        suggested_actions = json.dumps(llm_output.get('suggested_actions', []))
-        details = json.dumps(llm_output.get('details', llm_output))
+        # Extract fields from LLM output (handles multiple response formats)
+        extracted = self._extract_fields_from_llm_output(llm_output)
+
+        # Ensure summary is a string
+        summary = str(extracted.get('summary', '')) if extracted.get('summary') else ''
+
+        # Convert to JSON strings for database storage - ensure they're always strings
+        try:
+            mitre_list_data = extracted.get('mitre_list', [])
+            # Ensure it's serializable
+            if mitre_list_data is None:
+                mitre_list = "[]"
+            else:
+                mitre_list = json.dumps(mitre_list_data, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"Error serializing mitre_list: {e}, type: {type(extracted.get('mitre_list'))}, value: {extracted.get('mitre_list')}")
+            mitre_list = "[]"
+
+        try:
+            iocs_data = extracted.get('iocs', {})
+            if iocs_data is None:
+                iocs = "{}"
+            else:
+                iocs = json.dumps(iocs_data, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"Error serializing iocs: {e}, type: {type(extracted.get('iocs'))}, value: {extracted.get('iocs')}")
+            iocs = "{}"
+
+        try:
+            actions_data = extracted.get('suggested_actions', [])
+            if actions_data is None:
+                suggested_actions = "[]"
+            else:
+                suggested_actions = json.dumps(actions_data, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"Error serializing suggested_actions: {e}, type: {type(extracted.get('suggested_actions'))}, value: {extracted.get('suggested_actions')}")
+            suggested_actions = "[]"
+
+        try:
+            details = json.dumps(llm_output, ensure_ascii=False)  # Store full LLM response
+        except Exception as e:
+            logger.error(f"Error serializing details (full LLM output): {e}")
+            details = "{}"
 
         # Format hosts and agents
         hosts_str = ', '.join(hosts) if hosts else None
@@ -127,14 +164,17 @@ class ReportStorage:
             for item in faiss_context
         ])
 
-        # Insert report
-        cursor = self.conn.execute("""
-            INSERT INTO reports (
-                window_start, window_end, hosts, agents, alerts_count,
-                mitre_list, summary, risk_score, details, iocs,
-                suggested_actions, faiss_context
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
+        # Ensure all string parameters are actually strings (not None, lists, dicts, etc.)
+        # SQLite only accepts: NULL, INTEGER, REAL, TEXT, BLOB
+        mitre_list = str(mitre_list) if mitre_list is not None else "[]"
+        summary = str(summary) if summary is not None else ""
+        iocs = str(iocs) if iocs is not None else "{}"
+        suggested_actions = str(suggested_actions) if suggested_actions is not None else "[]"
+        details = str(details) if details is not None else "{}"
+        faiss_context_str = str(faiss_context_str) if faiss_context_str is not None else "[]"
+
+        # Build params tuple
+        params = (
             window_start_str,
             window_end_str,
             hosts_str,
@@ -147,7 +187,19 @@ class ReportStorage:
             iocs,
             suggested_actions,
             faiss_context_str
-        ))
+        )
+
+        logger.debug(f"Parameter types: {[type(p).__name__ for p in params]}")
+        logger.debug(f"Param 6 (mitre_list): type={type(mitre_list)}, len={len(mitre_list)}")
+
+        # Insert report
+        cursor = self.conn.execute("""
+            INSERT INTO reports (
+                window_start, window_end, hosts, agents, alerts_count,
+                mitre_list, summary, risk_score, details, iocs,
+                suggested_actions, faiss_context
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, params)
 
         self.conn.commit()
         report_id = cursor.lastrowid
@@ -158,6 +210,51 @@ class ReportStorage:
         )
 
         return report_id
+
+    def _extract_fields_from_llm_output(self, llm_output: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Extract fields from LLM output in the expected format
+
+        Args:
+            llm_output: Raw LLM output dictionary
+
+        Returns:
+            Dict with extracted fields: summary, mitre_list, iocs, suggested_actions
+        """
+        # Expected format from prompt:
+        # {
+        #   "summary": "...",
+        #   "mitre_list": [{technique_id, technique_name, tactic}],
+        #   "iocs": {ips: [], hashes: [], domains: [], file_paths: [], accounts: [], processes: []},
+        #   "suggested_actions": [{step, action, priority}],
+        #   ...
+        # }
+
+        result = {
+            'summary': llm_output.get('summary', llm_output.get('tldr', '')),
+            'mitre_list': llm_output.get('mitre_list', []),
+            'iocs': llm_output.get('iocs', {}),
+            'suggested_actions': llm_output.get('suggested_actions', [])
+        }
+
+        # Ensure iocs has the correct structure even if empty
+        if not isinstance(result['iocs'], dict):
+            result['iocs'] = {}
+
+        # Ensure all required IOC fields exist
+        ioc_template = {
+            'ips': [],
+            'hashes': [],
+            'domains': [],
+            'file_paths': [],
+            'accounts': [],
+            'processes': []
+        }
+        for key, default_value in ioc_template.items():
+            if key not in result['iocs']:
+                result['iocs'][key] = default_value
+
+        return result
 
     def get_report(self, report_id: int) -> Optional[Dict[str, Any]]:
         """
