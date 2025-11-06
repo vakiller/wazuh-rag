@@ -97,12 +97,15 @@ class AlertRetriever:
 
             if mitre_field and mitre_field != '[]':
                 try:
-                    mitre_list = json.loads(mitre_field) if isinstance(mitre_field, str) else mitre_field
+                    mitre_list = json.loads(mitre_field) if isinstance(
+                        mitre_field, str) else mitre_field
                     techniques.update(mitre_list)
                 except (json.JSONDecodeError, TypeError):
-                    logger.warning(f"Failed to parse MITRE techniques from alert {alert.get('alert_id')}")
+                    logger.warning(
+                        f"Failed to parse MITRE techniques from alert {alert.get('alert_id')}")
 
-        logger.info(f"Extracted {len(techniques)} unique MITRE techniques: {techniques}")
+        logger.info(
+            f"Extracted {len(techniques)} unique MITRE techniques: {techniques}")
 
         return techniques
 
@@ -299,7 +302,7 @@ class KnowledgeRetriever:
         seen_ids = set()
 
         # 1. Get MITRE technique exact matches
-        retriever = AlertRetriever(str(self.metadata_db_path).replace('knowledge.db', 'rag.db'))
+        retriever = AlertRetriever(str(self.metadata_db_path))
         mitre_ids = retriever.extract_mitre_techniques(alerts)
 
         mitre_matches = self.retrieve_by_mitre_id(mitre_ids)
