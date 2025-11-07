@@ -209,11 +209,35 @@ class AlertPreprocessor:
         for domain in matches:
             # Filter out common false positives
             domain_lower = domain.lower()
-            if not any(skip in domain_lower for skip in [
+
+            # Skip if it looks like a filename (has common extensions)
+            if any(domain_lower.endswith(ext) for ext in [
+                '.log', '.dat', '.exe', '.dll', '.sys', '.tmp', '.bak',
+                '.ini', '.xml', '.json', '.txt', '.csv', '.zip'
+            ]):
+                continue
+
+            # Skip common false positive domains
+            if any(skip in domain_lower for skip in [
                 'example.com', 'localhost', 'test.com', 'microsoft.com',
                 'windows.com', 'adobe.com'
             ]):
-                domains.add(domain)
+                continue
+
+            # Must have at least 2 parts (e.g., domain.com)
+            parts = domain.split('.')
+            if len(parts) < 2:
+                continue
+
+            # TLD must be at least 2 characters
+            if len(parts[-1]) < 2:
+                continue
+
+            # Skip if it looks like a Windows path component
+            if '\\' in domain or parts[0].upper() in ['HKEY', 'HKLM', 'HKCU']:
+                continue
+
+            domains.add(domain)
 
         return domains
 
@@ -227,13 +251,34 @@ class AlertPreprocessor:
 
         # Filter out common system accounts and noise
         filtered = set()
+        stopwords = {
+            'system', 'local', 'network', 'service', 'anonymous',
+            'null', 'nobody', 'root', 'domain', 'success', 'failure',
+            'name', 'event', 'guid', 'id', 'ids', 'information',
+            'error', 'warning', 'status', 'type', 'data', 'value',
+            'key', 'path', 'file', 'user', 'account', 'logon', 'login',
+            'process', 'thread', 'handle', 'object', 'security'
+        }
+
         for user in users:
             user_lower = user.lower()
-            if user and not any(skip in user_lower for skip in [
-                'system', 'local', 'network', 'service', 'anonymous',
-                'null', 'nobody', 'root'
-            ]):
-                filtered.add(user)
+            # Must be at least 3 characters
+            if len(user) < 3:
+                continue
+            # Skip if it's a stopword
+            if user_lower in stopwords:
+                continue
+            # Skip if it contains only digits
+            if user.isdigit():
+                continue
+            # Skip if it looks like a GUID pattern
+            if len(user) > 20 and '-' in user:
+                continue
+            # Must contain at least one letter
+            if not any(c.isalpha() for c in user):
+                continue
+
+            filtered.add(user)
 
         return filtered
 

@@ -357,6 +357,256 @@ class ThreatAnalyzer:
 
         return base_severity
 
+    def _calculate_deterministic_severity(
+        self,
+        alerts: list,
+        hosts: set,
+        mitre_techniques: set,
+        preparsed_data: Dict[str, Any]
+    ) -> str:
+        """
+        Calculate severity deterministically using rubric (Phase 4.2)
+
+        Rubric:
+        - Destructive technique (T1485, T1486, T1490) = +2
+        - Domain policy modification (T1484) = +2
+        - Multi-host impact (>=3 hosts) = +1
+        - High alert volume (>1000) = +1
+        - Valid account access (T1078) = +1
+        - Privilege escalation present = +1
+
+        Severity scale:
+        - 0-1: Low
+        - 2-3: Medium
+        - 4-5: High
+        - 6+: Critical
+
+        Args:
+            alerts: List of alert dicts
+            hosts: Set of affected hosts
+            mitre_techniques: Set of MITRE technique IDs
+            preparsed_data: Pre-parsed data from preprocessor
+
+        Returns:
+            Severity: Low | Medium | High | Critical
+        """
+        score = 0
+
+        # Destructive techniques (+2)
+        destructive_techniques = {'T1485', 'T1486', 'T1490'}
+        if any(tech in mitre_techniques for tech in destructive_techniques):
+            score += 2
+            logger.info("Severity +2: Destructive technique detected")
+
+        # Domain policy modification (+2)
+        if 'T1484' in mitre_techniques:
+            score += 2
+            logger.info("Severity +2: Domain policy modification detected")
+
+        # Multi-host impact (+1)
+        if len(hosts) >= 3:
+            score += 1
+            logger.info(f"Severity +1: Multi-host impact ({len(hosts)} hosts)")
+
+        # High alert volume (+1)
+        if len(alerts) > 1000:
+            score += 1
+            logger.info(f"Severity +1: High alert volume ({len(alerts)} alerts)")
+
+        # Valid account access (+1)
+        if 'T1078' in mitre_techniques:
+            score += 1
+            logger.info("Severity +1: Valid account access detected")
+
+        # Privilege escalation (+1)
+        priv_esc_techniques = {
+            'T1068', 'T1134', 'T1484', 'T1543', 'T1546', 'T1547', 'T1548', 'T1549'
+        }
+        if any(tech in mitre_techniques for tech in priv_esc_techniques):
+            score += 1
+            logger.info("Severity +1: Privilege escalation technique detected")
+
+        # Map score to severity
+        if score >= 6:
+            severity = 'Critical'
+        elif score >= 4:
+            severity = 'High'
+        elif score >= 2:
+            severity = 'Medium'
+        else:
+            severity = 'Low'
+
+        logger.info(f"Deterministic severity: {severity} (score: {score})")
+        return severity
+
+    def _generate_business_impact(
+        self,
+        mitre_techniques: set,
+        hosts: set,
+        preparsed_data: Dict[str, Any]
+    ) -> Dict[str, str]:
+        """
+        Generate business impact deterministically (Phase 4.2)
+
+        Args:
+            mitre_techniques: Set of MITRE technique IDs
+            hosts: Set of affected hosts
+            preparsed_data: Pre-parsed data
+
+        Returns:
+            Dict with business impact assessment
+        """
+        impact = {
+            'affected_systems': [],
+            'operational_risk': '',
+            'data_integrity_risk': '',
+            'domain_wide_risk': ''
+        }
+
+        # Affected systems
+        if hosts:
+            impact['affected_systems'] = list(hosts)[:5]  # Top 5 hosts
+
+        # Domain-wide risk
+        if 'T1484' in mitre_techniques or 'T1485' in mitre_techniques:
+            impact['domain_wide_risk'] = 'High - Potential for domain-wide compromise due to policy modification or destructive techniques'
+        elif len(hosts) >= 5:
+            impact['domain_wide_risk'] = 'Medium - Multiple hosts affected, lateral movement possible'
+        else:
+            impact['domain_wide_risk'] = 'Low - Limited host impact'
+
+        # Operational risk
+        if len(hosts) >= 3:
+            impact['operational_risk'] = 'High - Service disruption likely across multiple systems'
+        elif 'T1485' in mitre_techniques or 'T1486' in mitre_techniques:
+            impact['operational_risk'] = 'Critical - Data destruction or ransomware detected, immediate business impact'
+        elif 'T1490' in mitre_techniques:
+            impact['operational_risk'] = 'High - System recovery capabilities inhibited'
+        else:
+            impact['operational_risk'] = 'Medium - Limited operational disruption expected'
+
+        # Data integrity risk
+        if 'T1078' in mitre_techniques:
+            impact['data_integrity_risk'] = 'High - Valid credentials compromised, unauthorized data access possible'
+        elif 'T1485' in mitre_techniques or 'T1565' in mitre_techniques:
+            impact['data_integrity_risk'] = 'Critical - Data destruction or manipulation detected'
+        elif 'T1003' in mitre_techniques:
+            impact['data_integrity_risk'] = 'High - Credential dumping detected, data exfiltration risk'
+        else:
+            impact['data_integrity_risk'] = 'Medium - Potential for data compromise'
+
+        logger.info(f"Generated business impact: domain_wide={impact['domain_wide_risk'][:20]}, operational={impact['operational_risk'][:20]}")
+        return impact
+
+    def _generate_technique_playbooks(
+        self,
+        mitre_techniques: set,
+        existing_actions
+    ) -> Dict[str, list]:
+        """
+        Add technique-specific response playbooks (Phase 4.2)
+
+        Args:
+            mitre_techniques: Set of MITRE technique IDs
+            existing_actions: Existing suggested actions from LLM (dict or list)
+
+        Returns:
+            Enhanced actions dict with technique-specific playbooks
+        """
+        # Handle both old (list) and new (dict) formats
+        if isinstance(existing_actions, dict):
+            # Ensure each value is a list
+            actions = {}
+            for phase in ['containment', 'eradication', 'recovery']:
+                value = existing_actions.get(phase, [])
+                if isinstance(value, list):
+                    actions[phase] = value[:]
+                elif isinstance(value, str):
+                    actions[phase] = [value] if value else []
+                else:
+                    actions[phase] = []
+        elif isinstance(existing_actions, list):
+            # Old format - convert to new format
+            actions = {
+                'containment': [],
+                'eradication': [],
+                'recovery': []
+            }
+            # Try to categorize existing actions
+            for action in existing_actions:
+                action_text = str(action) if action else ''
+                if not action_text:
+                    continue
+                if any(keyword in action_text.lower() for keyword in ['isolate', 'disable', 'block', 'stop']):
+                    actions['containment'].append(action_text)
+                elif any(keyword in action_text.lower() for keyword in ['remove', 'delete', 'scan', 'clean']):
+                    actions['eradication'].append(action_text)
+                else:
+                    actions['recovery'].append(action_text)
+        else:
+            # Empty or invalid format
+            actions = {
+                'containment': [],
+                'eradication': [],
+                'recovery': []
+            }
+
+        logger.debug(f"Playbook actions after normalization: containment={type(actions['containment'])}, eradication={type(actions['eradication'])}, recovery={type(actions['recovery'])}")
+
+        # T1112 - Modify Registry
+        if 'T1112' in mitre_techniques:
+            if not any('registry' in a.lower() for a in actions['containment']):
+                actions['containment'].append('Enable real-time registry monitoring and alerting')
+            if not any('registry' in a.lower() for a in actions['eradication']):
+                actions['eradication'].append('Audit and rollback unauthorized registry modifications')
+                actions['eradication'].append('Scan for persistence mechanisms in registry Run keys')
+            if not any('registry' in a.lower() for a in actions['recovery']):
+                actions['recovery'].append('Restore registry from known-good backup')
+                actions['recovery'].append('Implement stricter registry access controls')
+
+        # T1078 - Valid Accounts
+        if 'T1078' in mitre_techniques:
+            if not any('credential' in a.lower() or 'password' in a.lower() for a in actions['containment']):
+                actions['containment'].append('Force password reset for all potentially compromised accounts')
+                actions['containment'].append('Enable MFA for all administrative accounts')
+            if not any('account' in a.lower() for a in actions['eradication']):
+                actions['eradication'].append('Review and revoke suspicious authentication sessions')
+            if not any('credential' in a.lower() or 'password' in a.lower() for a in actions['recovery']):
+                actions['recovery'].append('Implement password policy enhancements')
+                actions['recovery'].append('Deploy account anomaly detection')
+
+        # T1485 - Data Destruction
+        if 'T1485' in mitre_techniques:
+            if not any('backup' in a.lower() for a in actions['containment']):
+                actions['containment'].append('Immediately isolate affected systems to prevent further data loss')
+            if not any('recover' in a.lower() or 'restore' in a.lower() for a in actions['recovery']):
+                actions['recovery'].append('Restore data from Volume Shadow Copies (VSS)')
+                actions['recovery'].append('Restore critical files from backup systems')
+                actions['recovery'].append('Verify data integrity after restoration')
+
+        # T1484 - Domain Policy Modification
+        if 'T1484' in mitre_techniques:
+            if not any('policy' in a.lower() or 'gpo' in a.lower() for a in actions['containment']):
+                actions['containment'].append('Audit all Group Policy Objects (GPOs) for unauthorized changes')
+                actions['containment'].append('Revert malicious GPO modifications immediately')
+            if not any('domain' in a.lower() for a in actions['eradication']):
+                actions['eradication'].append('Review domain controller logs for unauthorized administrative actions')
+            if not any('policy' in a.lower() for a in actions['recovery']):
+                actions['recovery'].append('Restore GPOs from known-good backups')
+                actions['recovery'].append('Implement GPO change monitoring and approval workflow')
+
+        # T1003 - Credential Dumping
+        if 'T1003' in mitre_techniques:
+            if not any('credential' in a.lower() for a in actions['containment']):
+                actions['containment'].append('Reset all domain administrator credentials immediately')
+                actions['containment'].append('Enable Credential Guard on all endpoints')
+            if not any('lsass' in a.lower() or 'mimikatz' in a.lower() for a in actions['eradication']):
+                actions['eradication'].append('Scan for credential dumping tools (mimikatz, procdump)')
+                actions['eradication'].append('Clear LSASS memory and restart affected systems')
+
+        logger.info(f"Enhanced playbooks: {len(actions['containment'])} containment, {len(actions['eradication'])} eradication, {len(actions['recovery'])} recovery actions")
+        return actions
+
     def _apply_fallback_logic(
         self,
         llm_output: Dict[str, Any],
@@ -471,49 +721,103 @@ class ThreatAnalyzer:
             llm_output['timeline'] = []
             logger.warning("LLM returned empty timeline, generating from alerts")
 
-            # Create timeline from first few alerts with MITRE techniques
-            timeline_events = []
-            for alert in alerts[:10]:  # First 10 alerts
-                timestamp = alert.get('timestamp')
-                host = alert.get('agent_name', alert.get('agent_ip', 'Unknown'))
-                rule_desc = alert.get('rule_description', 'Unknown activity')
+        # Phase 4.2: Always enhance timeline to eliminate "Unknown" values
+        # Build technique lookup map from knowledge base
+        technique_map = {}
+        for item in knowledge_items:
+            if item.get('entity_type') == 'attack-pattern':
+                tech_id = item.get('metadata', {}).get('mitre_id')
+                if tech_id:
+                    technique_map[tech_id] = {
+                        'name': item.get('name', tech_id),
+                        'tactic': 'Unknown'
+                    }
+                    # Extract tactic from kill chain
+                    kill_chains = item.get('metadata', {}).get('kill_chains', [])
+                    for chain in kill_chains:
+                        if 'mitre-attack:' in chain:
+                            tactic = chain.split(':')[-1].replace('-', ' ').title()
+                            technique_map[tech_id]['tactic'] = tactic
+                            break
 
-                # Try to extract MITRE technique
+        # If timeline is empty, generate from alerts
+        if len(llm_output['timeline']) == 0:
+            timeline_events = []
+            # Group alerts by technique for better timeline
+            alert_groups = {}
+            for alert in alerts[:20]:
                 mitre_field = alert.get('mitre_techniques')
-                technique = 'Unknown'
                 if mitre_field:
                     try:
                         import json
                         mitre_list = json.loads(mitre_field) if isinstance(mitre_field, str) else mitre_field
-                        if mitre_list and len(mitre_list) > 0:
-                            technique = mitre_list[0]
+                        for tech in mitre_list:
+                            if tech not in alert_groups:
+                                alert_groups[tech] = []
+                            alert_groups[tech].append(alert)
                     except:
                         pass
 
-                # Find technique name from knowledge
-                technique_name = technique
-                tactic = 'Unknown'
-                for item in knowledge_items:
-                    if item.get('metadata', {}).get('mitre_id') == technique:
-                        technique_name = item.get('name', technique)
-                        kill_chains = item.get('metadata', {}).get('kill_chains', [])
-                        if kill_chains:
-                            for chain in kill_chains:
-                                if 'mitre-attack:' in chain:
-                                    tactic = chain.split(':')[-1].replace('-', ' ').title()
-                                    break
-                        break
+            # Create timeline entry for each technique
+            for tech_id, tech_alerts in list(alert_groups.items())[:5]:
+                first_alert = tech_alerts[0]
+                tech_info = technique_map.get(tech_id, {'name': tech_id, 'tactic': 'Unknown'})
 
                 timeline_events.append({
-                    'timestamp': timestamp,
-                    'host': host,
-                    'tactic': tactic,
-                    'technique': f"{technique} - {technique_name}",
-                    'description': rule_desc[:100]
+                    'timestamp': first_alert.get('timestamp', 'Unknown'),
+                    'host': first_alert.get('agent_name', first_alert.get('agent_ip', 'Unknown')),
+                    'tactic': tech_info['tactic'],
+                    'technique': f"{tech_id} - {tech_info['name']}",
+                    'description': first_alert.get('rule_description', 'Security alert detected')[:100]
                 })
 
-            llm_output['timeline'] = timeline_events[:5]  # Top 5 events
+            llm_output['timeline'] = timeline_events
             logger.info(f"Fallback: Generated timeline with {len(llm_output['timeline'])} events")
+
+        # Phase 4.2: Check if timeline has "Unknown" placeholders and regenerate if needed
+        has_unknown_timeline = any(
+            isinstance(event, dict) and (
+                event.get('tactic') == 'Unknown' or
+                event.get('technique') == 'Unknown' or
+                'Unknown' in str(event.get('technique', ''))
+            )
+            for event in llm_output.get('timeline', [])
+        )
+
+        if has_unknown_timeline:
+            logger.warning("Timeline contains Unknown values, regenerating from alerts")
+            # Regenerate timeline completely
+            timeline_events = []
+            alert_groups = {}
+            for alert in alerts[:20]:
+                mitre_field = alert.get('mitre_techniques')
+                if mitre_field:
+                    try:
+                        import json
+                        mitre_list = json.loads(mitre_field) if isinstance(mitre_field, str) else mitre_field
+                        for tech in mitre_list:
+                            if tech not in alert_groups:
+                                alert_groups[tech] = []
+                            alert_groups[tech].append(alert)
+                    except:
+                        pass
+
+            for tech_id, tech_alerts in list(alert_groups.items())[:5]:
+                first_alert = tech_alerts[0]
+                tech_info = technique_map.get(tech_id, {'name': tech_id, 'tactic': 'N/A'})
+
+                timeline_events.append({
+                    'timestamp': first_alert.get('timestamp', 'N/A'),
+                    'host': first_alert.get('agent_name', first_alert.get('agent_ip', 'N/A')),
+                    'tactic': tech_info['tactic'],
+                    'technique': f"{tech_id} - {tech_info['name']}",
+                    'description': first_alert.get('rule_description', 'Security alert detected')[:100]
+                })
+
+            llm_output['timeline'] = timeline_events
+            logger.info(f"Timeline regenerated: {len(timeline_events)} events with full context")
+        else:
+            logger.info("Timeline enhanced: no Unknown values found")
 
         # 4. Fill missing evidence_map
         # Normalize evidence_map field names
@@ -552,6 +856,18 @@ class ThreatAnalyzer:
             if has_placeholder or len(llm_output['evidence_map']) == 0:
                 logger.warning("LLM returned empty/placeholder evidence_map, generating from data")
 
+                # Phase 4.2: Generate evidence map with detailed findings
+                # Build technique lookup from knowledge base
+                tech_lookup = {}
+                for item in knowledge_items:
+                    if item.get('entity_type') == 'attack-pattern':
+                        tech_id = item.get('metadata', {}).get('mitre_id')
+                        if tech_id:
+                            tech_lookup[tech_id] = {
+                                'name': item.get('name', tech_id),
+                                'description': item.get('content', '')[:200]
+                            }
+
                 # Group alerts by MITRE technique
                 technique_groups = {}
                 for alert in alerts[:20]:  # First 20 alerts
@@ -567,28 +883,94 @@ class ThreatAnalyzer:
                         except:
                             pass
 
-                # Create evidence map entries
+                # Create evidence map entries with detailed findings
                 evidence_map = []
                 for technique, technique_alerts in list(technique_groups.items())[:5]:
-                    # Find technique name
-                    technique_name = technique
-                    for item in knowledge_items:
-                        if item.get('metadata', {}).get('mitre_id') == technique:
-                            technique_name = item.get('name', technique)
-                            break
+                    tech_info = tech_lookup.get(technique, {'name': technique, 'description': ''})
+                    technique_name = tech_info['name']
+
+                    # Build detailed finding description
+                    host_count = len(set([a.get('agent_name') for a in technique_alerts if a.get('agent_name')]))
+                    finding_desc = f"{technique_name} ({technique}) detected on {host_count} host(s)"
+
+                    # Add context from alert rules
+                    common_rules = {}
+                    for alert in technique_alerts[:5]:
+                        rule = alert.get('rule_description', '')
+                        if rule:
+                            common_rules[rule] = common_rules.get(rule, 0) + 1
+
+                    if common_rules:
+                        top_rule = max(common_rules, key=common_rules.get)
+                        finding_desc += f" - {top_rule[:80]}"
 
                     evidence_map.append({
-                        'finding': f"{technique_name} activity detected",
+                        'finding': finding_desc,
                         'alert_ids': [str(a.get('alert_id', '')) for a in technique_alerts[:5]],
                         'timestamps': [a.get('timestamp', '') for a in technique_alerts[:3]],
-                        'hosts': list(set([a.get('agent_name', 'Unknown') for a in technique_alerts])),
+                        'hosts': list(set([a.get('agent_name', 'Unknown') for a in technique_alerts if a.get('agent_name')]))[:5],
                         'knowledge_refs': [technique]
                     })
 
                 llm_output['evidence_map'] = evidence_map
                 logger.info(f"Fallback: Generated evidence_map with {len(evidence_map)} entries")
 
-        logger.info("Fallback logic complete")
+        # 5. Apply deterministic severity (Phase 4.2 - override LLM)
+        mitre_ids = set()
+        for item in llm_output.get('mitre_list', []):
+            if isinstance(item, dict) and item.get('technique_id'):
+                mitre_ids.add(item['technique_id'])
+
+        # Extract hosts from alerts for severity calculation
+        alert_hosts = set()
+        for alert in alerts[:100]:
+            if alert.get('agent_name'):
+                alert_hosts.add(alert['agent_name'])
+
+        deterministic_severity = self._calculate_deterministic_severity(
+            alerts=alerts,
+            hosts=alert_hosts,
+            mitre_techniques=mitre_ids,
+            preparsed_data=preparsed_data
+        )
+
+        # Override LLM severity with deterministic calculation
+        if deterministic_severity != llm_output.get('severity'):
+            logger.warning(f"Overriding LLM severity '{llm_output.get('severity')}' with deterministic '{deterministic_severity}'")
+            llm_output['severity'] = deterministic_severity
+
+        # 6. Generate business impact (Phase 4.2)
+        if not llm_output.get('business_impact') or not isinstance(llm_output.get('business_impact'), dict):
+            llm_output['business_impact'] = {}
+
+        # Check if business impact is incomplete
+        impact_fields = ['affected_systems', 'operational_risk', 'data_integrity_risk', 'domain_wide_risk']
+        has_incomplete_impact = any(
+            not llm_output.get('business_impact', {}).get(field)
+            for field in impact_fields
+        )
+
+        if has_incomplete_impact:
+            logger.info("Generating deterministic business impact")
+            generated_impact = self._generate_business_impact(
+                mitre_techniques=mitre_ids,
+                hosts=alert_hosts,
+                preparsed_data=preparsed_data
+            )
+            # Merge generated impact with any existing LLM output
+            for key, value in generated_impact.items():
+                if not llm_output['business_impact'].get(key):
+                    llm_output['business_impact'][key] = value
+
+        # 7. Enhance suggested actions with technique-specific playbooks (Phase 4.2)
+        if llm_output.get('suggested_actions'):
+            enhanced_actions = self._generate_technique_playbooks(
+                mitre_techniques=mitre_ids,
+                existing_actions=llm_output['suggested_actions']
+            )
+            llm_output['suggested_actions'] = enhanced_actions
+
+        logger.info("Fallback logic complete (Phase 4.2 enhanced)")
         return llm_output
 
     def test_llm_connection(self) -> bool:

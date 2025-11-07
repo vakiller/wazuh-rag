@@ -199,6 +199,9 @@ def print_report(report: dict, detailed: bool = False):
 
     # Phase 4: Evidence Map (link findings to alert IDs, timestamps, hosts)
     evidence_map = report.get('details', {}).get('evidence_map', [])
+    # Ensure evidence_map is a list
+    if not isinstance(evidence_map, list):
+        evidence_map = []
     if evidence_map and detailed:
         print("\n" + "-" * 80)
         print("EVIDENCE MAP")
