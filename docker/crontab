@@ -11,12 +11,12 @@ PYTHON=/usr/local/bin/python3
 # ============================================================================
 # Phase 1: Wazuh Alert Retrieval - Every 5 minutes
 # ============================================================================
-*/5 * * * * cd /app && /usr/local/bin/python3 wazuh_retrieval.py >> /var/log/cron/cron.log 2>&1
+*/5 * * * * . /etc/environment && cd /app && /usr/local/bin/python3 wazuh_retrieval.py >> /var/log/cron/cron.log 2>&1
 
 # ============================================================================
 # Phase 2: Knowledge Ingestion (OpenCTI Sync) - Every 7 days (weekly on Sunday at 2 AM)
 # ============================================================================
-0 2 * * 0 cd /app && /usr/local/bin/python3 sync_opencti.py --incremental >> /var/log/cron/cron.log 2>&1
+0 2 * * 0 . /etc/environment && cd /app && /usr/local/bin/python3 sync_opencti.py --incremental >> /var/log/cron/cron.log 2>&1
 
 # ============================================================================
 # Phase 3: LLM Analysis
