@@ -25,6 +25,9 @@ The dockerized RAG Wazuh System consists of:
   - **Phase 1**: Wazuh alert retrieval (every 5 minutes)
   - **Phase 2**: OpenCTI knowledge ingestion (every 7 days)
   - **Phase 3**: LLM-based threat analysis (hourly and daily)
+- **Dashboard** (NEW): React-based web interface for threat visualization and analysis
+  - Frontend (Port 3000): Professional SOC dashboard with charts and AI insights
+  - Backend API (Port 8000): FastAPI service for data access
 - **pgAdmin** (Optional): Web-based database management interface
 
 ### Key Features
@@ -153,17 +156,37 @@ LLM_BASE_URL=http://your.llm.host:11434
 ### 3. Start the Services
 
 ```bash
-# Start in detached mode
+# Start all services (includes dashboard)
 docker-compose up -d
+
+# Or start without dashboard
+docker-compose up -d postgres wazuh-rag-system
 
 # View logs
 docker-compose logs -f
 
 # View logs for specific service
 docker-compose logs -f wazuh-rag-app
+docker-compose logs -f dashboard
 ```
 
-### 4. Verify Deployment
+### 4. Access the Dashboard
+
+Once services are running, access the web interface:
+
+- **Dashboard UI**: http://localhost:3000
+- **API Documentation**: http://localhost:8000/docs
+- **pgAdmin** (optional): http://localhost:5050
+
+The dashboard provides:
+- Real-time threat statistics and risk trends
+- AI-powered threat analysis reports
+- Attack timeline reconstruction
+- Predictive intelligence and response playbooks
+- MITRE ATT&CK technique mapping
+- IOC extraction and business impact assessment
+
+### 5. Verify Deployment
 
 ```bash
 # Check service status

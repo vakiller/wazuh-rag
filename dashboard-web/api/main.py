@@ -1,0 +1,231 @@
+#!/usr/bin/env python3
+"""
+Dashboard API Server
+FastAPI backend for RAG Wazuh Dashboard
+"""
+
+import os
+import json
+from datetime import datetime, timedelta
+from typing import List, Optional, Dict, Any
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+import psycopg2
+import psycopg2.extras
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+app = FastAPI(
+    title="RAG Wazuh Dashboard API",
+    description="AI-powered threat analysis dashboard backend",
+    version="1.0.0"
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify exact origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Database connection
+def get_db_connection():
+    """Get PostgreSQL database connection"""
+    return psycopg2.connect(
+        host=os.getenv('DB_HOST', 'localhost'),
+        port=os.getenv('DB_PORT', '5432'),
+        database=os.getenv('DB_NAME', 'wazuh_rag'),
+        user=os.getenv('DB_USER', 'wazuh_user'),
+        password=os.getenv('DB_PASSWORD', '')
+    )
+
+# Helper functions
+def row_to_dict(row: Dict) -> Dict[str, Any]:
+    """Convert database row to dictionary"""
+    result = dict(row)
+    # PostgreSQL returns arrays and JSONB natively, no parsing needed
+    return result
+
+@app.get("/")
+async def root():
+    """Health check endpoint"""
+    return {
+        "status": "online",
+        "service": "RAG Wazuh Dashboard API",
+        "version": "1.0.0"
+    }
+
+@app.get("/api/health")
+async def health_check():
+    """Detailed health check"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT 1")
+        conn.close()
+        db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+
+    return {
+        "status": "online",
+        "database": db_status,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+# IMPORTANT: Specific routes must come BEFORE path parameter routes
+# Define /stats, /recent, /high-risk, /timeseries BEFORE /{report_id}
+
+@app.get("/api/reports/stats")
+async def get_dashboard_stats():
+    """Get dashboard statistics"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            # Total reports and average risk score
+            cursor.execute("""
+                SELECT
+                    COUNT(*) as total_reports,
+                    COALESCE(AVG(risk_score), 0)::int as avg_risk_score,
+                    COUNT(*) FILTER (WHERE risk_score >= 70) as high_risk_count,
+                    COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '24 hours') as recent_24h_count,
+                    COUNT(*) FILTER (WHERE LOWER(severity) = 'critical') as critical_count,
+                    COUNT(*) FILTER (WHERE LOWER(severity) = 'high') as high_count,
+                    COUNT(*) FILTER (WHERE LOWER(severity) = 'medium') as medium_count,
+                    COUNT(*) FILTER (WHERE LOWER(severity) = 'low') as low_count
+                FROM reports
+            """)
+            stats = dict(cursor.fetchone())
+
+        conn.close()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/reports/recent")
+async def get_recent_reports(limit: int = Query(10, ge=1, le=50)):
+    """Get most recent reports"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute(
+                "SELECT * FROM reports ORDER BY created_at DESC LIMIT %s",
+                (limit,)
+            )
+            reports = [row_to_dict(row) for row in cursor.fetchall()]
+
+        conn.close()
+        return reports
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/reports/high-risk")
+async def get_high_risk_reports(min_score: int = Query(70, ge=0, le=100)):
+    """Get high-risk reports"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute(
+                """SELECT * FROM reports
+                   WHERE risk_score >= %s
+                   ORDER BY risk_score DESC, created_at DESC""",
+                (min_score,)
+            )
+            reports = [row_to_dict(row) for row in cursor.fetchall()]
+
+        conn.close()
+        return reports
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/reports/timeseries")
+async def get_timeseries_data(days: int = Query(7, ge=1, le=30)):
+    """Get time series data for charts"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("""
+                SELECT
+                    DATE(created_at) as date,
+                    COUNT(*) as reports,
+                    COALESCE(AVG(risk_score), 0)::int as avgRisk
+                FROM reports
+                WHERE created_at >= NOW() - INTERVAL '%s days'
+                GROUP BY DATE(created_at)
+                ORDER BY DATE(created_at)
+            """, (days,))
+            data = [dict(row) for row in cursor.fetchall()]
+
+        conn.close()
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/reports")
+async def get_reports(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    severity: Optional[str] = None,
+    min_risk_score: Optional[int] = Query(None, ge=0, le=100)
+):
+    """Get all reports with filtering"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            query = "SELECT * FROM reports WHERE 1=1"
+            params = []
+
+            if severity:
+                query += " AND LOWER(severity) = LOWER(%s)"
+                params.append(severity)
+
+            if min_risk_score is not None:
+                query += " AND risk_score >= %s"
+                params.append(min_risk_score)
+
+            query += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
+            params.extend([limit, offset])
+
+            cursor.execute(query, params)
+            reports = [row_to_dict(row) for row in cursor.fetchall()]
+
+        conn.close()
+        return reports
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/reports/{report_id}")
+async def get_report_by_id(report_id: int):
+    """Get single report by ID"""
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+            cursor.execute("SELECT * FROM reports WHERE id = %s", (report_id,))
+            report = cursor.fetchone()
+
+            if not report:
+                conn.close()
+                raise HTTPException(status_code=404, detail="Report not found")
+
+            result = row_to_dict(report)
+
+        conn.close()
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )

@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS reports (
 
     -- LLM analysis results
     summary TEXT,
+    severity VARCHAR(20),  -- Critical, High, Medium, Low
     risk_score INTEGER CHECK (risk_score >= 0 AND risk_score <= 100),
     details JSONB,  -- Full LLM output
     iocs JSONB,  -- Extracted IOCs

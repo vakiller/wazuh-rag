@@ -85,6 +85,37 @@ services:
       retries: 3
       start_period: 30s
 
+  # Dashboard Service (React + FastAPI)
+  dashboard:
+    build:
+      context: ./dashboard-web
+      dockerfile: Dockerfile
+    container_name: wazuh-rag-dashboard
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-wazuh_rag}
+      DB_USER: ${DB_USER:-wazuh_user}
+      DB_PASSWORD: ${DB_PASSWORD:-wazuh_password}
+      # API Configuration
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "${DASHBOARD_PORT:-3000}:3000"  # Frontend
+      - "${DASHBOARD_API_PORT:-8000}:8000"  # Backend API
+    networks:
+      - wazuh-rag-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   # Optional: pgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
