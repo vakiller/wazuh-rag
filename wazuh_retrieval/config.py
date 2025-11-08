@@ -15,7 +15,7 @@ class IndexerConfig:
     host: str
     port: int = 9200
     username: str = "admin"
-    password: str = ""
+    password: str = "SecretPassword"
     use_ssl: bool = True
     verify_certs: bool = True
     ca_certs_path: Optional[str] = None
@@ -61,14 +61,16 @@ class IndexerConfig:
             username=os.getenv("WAZUH_INDEXER_USER", "admin"),
             password=os.getenv("WAZUH_INDEXER_PASSWORD", ""),
             use_ssl=os.getenv("WAZUH_INDEXER_SSL", "true").lower() == "true",
-            verify_certs=os.getenv("WAZUH_INDEXER_VERIFY_CERTS", "true").lower() == "true",
+            verify_certs=os.getenv(
+                "WAZUH_INDEXER_VERIFY_CERTS", "true").lower() == "true",
             ca_certs_path=os.getenv("WAZUH_INDEXER_CA_CERTS"),
             poll_interval_seconds=int(os.getenv("WAZUH_POLL_INTERVAL", "300")),
             batch_size=int(os.getenv("WAZUH_BATCH_SIZE", "1000")),
             min_alert_level=int(os.getenv("WAZUH_MIN_ALERT_LEVEL", "0")),
             output_dir=os.getenv("WAZUH_OUTPUT_DIR", "./collected_alerts"),
             sqlite_db_path=os.getenv("WAZUH_SQLITE_DB", "./wazuh_alerts.db"),
-            state_file=os.getenv("WAZUH_STATE_FILE", ".wazuh_collector_state.json"),
+            state_file=os.getenv("WAZUH_STATE_FILE",
+                                 ".wazuh_collector_state.json"),
         )
 
     def validate(self) -> bool:
@@ -91,12 +93,15 @@ class IndexerConfig:
             raise ValueError(f"Invalid port: {self.port}")
 
         if self.batch_size < 1 or self.batch_size > 10000:
-            raise ValueError(f"batch_size must be between 1 and 10000, got: {self.batch_size}")
+            raise ValueError(
+                f"batch_size must be between 1 and 10000, got: {self.batch_size}")
 
         if self.poll_interval_seconds < 10:
-            raise ValueError(f"poll_interval_seconds must be at least 10 seconds, got: {self.poll_interval_seconds}")
+            raise ValueError(
+                f"poll_interval_seconds must be at least 10 seconds, got: {self.poll_interval_seconds}")
 
         if self.min_alert_level < 0 or self.min_alert_level > 15:
-            raise ValueError(f"min_alert_level must be between 0 and 15, got: {self.min_alert_level}")
+            raise ValueError(
+                f"min_alert_level must be between 0 and 15, got: {self.min_alert_level}")
 
         return True

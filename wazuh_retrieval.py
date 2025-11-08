@@ -29,10 +29,12 @@ from wazuh_retrieval.config import IndexerConfig
 from wazuh_retrieval.client import WazuhIndexerClient
 from wazuh_retrieval.tracking.state import StateTracker
 from wazuh_retrieval.output.sqlite_handler import SQLiteOutputHandler
+from wazuh_retrieval.output.postgres_handler import PostgreSQLOutputHandler
 from wazuh_retrieval.output.file_handler import JSONLinesOutputHandler
 from wazuh_retrieval.scheduler import WazuhCollectorScheduler
 from wazuh_retrieval.utils import setup_logging
 from wazuh_retrieval.exceptions import ConfigurationError
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +65,9 @@ Environment Variables:
 
     parser.add_argument(
         '--output',
-        choices=['sqlite', 'file'],
-        default='sqlite',
-        help='Output handler type (default: sqlite)'
+        choices=['sqlite', 'postgres', 'file'],
+        default=None,
+        help='Output handler type (default: auto-detect from env)'
     )
 
     parser.add_argument(
@@ -92,7 +94,7 @@ Environment Variables:
 
 def create_output_handler(args, config):
     """
-    Create appropriate output handler based on arguments.
+    Create appropriate output handler based on arguments or environment.
 
     Args:
         args: Parsed command-line arguments
@@ -101,14 +103,26 @@ def create_output_handler(args, config):
     Returns:
         Output handler instance
     """
-    if args.output == 'sqlite':
+    # Auto-detect from environment if not specified
+    output_type = args.output
+    if output_type is None:
+        # Check if DB_HOST is set (indicates PostgreSQL)
+        if os.getenv('DB_HOST'):
+            output_type = 'postgres'
+        else:
+            output_type = 'sqlite'
+
+    if output_type == 'postgres':
+        logger.info(f"Using PostgreSQL output handler: {os.getenv('DB_HOST', 'localhost')}/{os.getenv('DB_NAME', 'wazuh_rag')}")
+        return PostgreSQLOutputHandler()
+    elif output_type == 'sqlite':
         logger.info(f"Using SQLite output handler: {config.sqlite_db_path}")
         return SQLiteOutputHandler(config.sqlite_db_path)
-    elif args.output == 'file':
+    elif output_type == 'file':
         logger.info(f"Using JSONL file output handler: {config.output_dir}")
         return JSONLinesOutputHandler(config.output_dir)
     else:
-        raise ConfigurationError(f"Unknown output handler: {args.output}")
+        raise ConfigurationError(f"Unknown output handler: {output_type}")
 
 
 def main():

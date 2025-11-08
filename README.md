@@ -1,294 +1,665 @@
-# Wazuh Alert Collector
+# RAG Wazuh System - Docker Deployment Guide
 
-A robust data-retrieval module for collecting and normalizing security alerts from Wazuh Indexer (OpenSearch/Elasticsearch) for threat reporting and analysis.
+Complete guide for deploying the RAG-based Threat Analysis System using Docker and Docker Compose.
 
-## Features
+## Table of Contents
 
-- **Near-real-time collection**: Scheduled polling (configurable intervals) with automatic state tracking
-- **Resumable**: Checkpoint-based collection prevents duplicate processing
-- **Scalable pagination**: Uses `search_after` API for efficient large-volume retrieval
-- **Schema normalization**: Transforms nested Wazuh documents to flat, consistent schema
-- **MITRE ATT&CK extraction**: Automatic extraction and flattening of MITRE technique/tactic mappings
-- **Multiple output formats**: SQLite, JSONL files, or Kafka (extensible)
-- **Production-ready**: Error handling, retry logic, graceful shutdown
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Prerequisites](#prerequisites)
+4. [Quick Start](#quick-start)
+5. [Configuration](#configuration)
+6. [Deployment](#deployment)
+7. [Monitoring](#monitoring)
+8. [Troubleshooting](#troubleshooting)
+9. [Maintenance](#maintenance)
+
+---
+
+## Overview
+
+The dockerized RAG Wazuh System consists of:
+
+- **PostgreSQL Database**: External database for all data storage (alerts, knowledge, reports)
+- **RAG Wazuh Application**: Runs all three components via cron:
+  - **Phase 1**: Wazuh alert retrieval (every 5 minutes)
+  - **Phase 2**: OpenCTI knowledge ingestion (every 7 days)
+  - **Phase 3**: LLM-based threat analysis (hourly and daily)
+- **pgAdmin** (Optional): Web-based database management interface
+
+### Key Features
+
+✅ **No manual cronjob setup** - All scheduling handled by Docker container
+✅ **External PostgreSQL** - Easy database access and backup
+✅ **Environment-based configuration** - All settings via `.env` file
+✅ **Persistent data** - FAISS index, logs, and database stored in volumes
+✅ **Health checks** - Automatic monitoring of service health
+✅ **One-command deployment** - `docker-compose up -d`
+
+---
 
 ## Architecture
 
 ```
-Wazuh Indexer (OpenSearch)
-         ↓
-   [AlertCollector] ← collects with pagination
-         ↓
-   [AlertTransformer] ← normalizes schema
-         ↓
-   [OutputHandler] → SQLite / JSONL / Kafka
-         ↓
-   Phase 2: Analytics, Enrichment, RAG
+┌─────────────────────────────────────────────────────────────┐
+│                    Docker Compose Stack                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌─────────────────────┐      ┌──────────────────────────┐  │
+│  │   PostgreSQL DB     │◄─────┤  RAG Wazuh Application  │  │
+│  │   (Port 5432)       │      │  (Cron-based)            │  │
+│  │                     │      │                          │  │
+│  │  - alerts           │      │  Cron Jobs:              │  │
+│  │  - knowledge        │      │  • wazuh_retrieval.py    │  │
+│  │  - reports          │      │    (every 5 min)         │  │
+│  │  - sync_state       │      │  • sync_opencti.py       │  │
+│  └─────────────────────┘      │    (every 7 days)        │  │
+│           ▲                   │  • analyze_threats.py    │  │
+│           │                   │    (hourly + daily)      │  │
+│           │                   └──────────────────────────┘  │
+│  ┌─────────────────────┐               │                    │
+│  │  pgAdmin (Optional) │◄──────────────┘                    │
+│  │  (Port 5050)        │                                    │
+│  └─────────────────────┘                                    │
+│                                                               │
+│  Persistent Volumes:                                          │
+│  • postgres_data   - Database files                          │
+│  • faiss_data      - FAISS vector index                      │
+│  • app_logs        - Application logs                        │
+│  • cron_logs       - Cron execution logs                     │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+
+External Services (Not in Docker):
+┌────────────────────────────────────────────────────────────┐
+│  • Wazuh Indexer     (172.16.235.140:9200)                 │
+│  • OpenCTI           (100.114.206.116:8080)                │
+│  • Ollama LLM        (192.168.1.11:11434)                  │
+└────────────────────────────────────────────────────────────┘
 ```
 
-## Installation
+---
 
-### Prerequisites
+## Prerequisites
 
-- Python 3.8+
-- Access to Wazuh Indexer (OpenSearch/Elasticsearch)
-- Network connectivity to Wazuh Indexer API (default port 9200)
+### System Requirements
 
-### Setup
+- **Operating System**: Linux, macOS, or Windows with WSL2
+- **Docker**: Version 20.10 or higher
+- **Docker Compose**: Version 2.0 or higher
+- **Memory**: Minimum 4GB RAM (8GB recommended for Phase 2 embedding models)
+- **Disk Space**: 10GB minimum (for database, FAISS index, and logs)
 
-1. Clone or download this repository
+### External Services
 
-2. Install dependencies:
+Ensure the following services are accessible:
+
+1. **Wazuh Indexer** (OpenSearch/Elasticsearch)
+   - Host and port accessible from Docker container
+   - Valid credentials with read access to `wazuh-alerts-*` indices
+
+2. **OpenCTI** (Threat Intelligence Platform)
+   - GraphQL API accessible
+   - Valid API token with read permissions
+
+3. **Ollama LLM Service**
+   - Running with a suitable model (e.g., llama3.1:8b-instruct-q4_K_M)
+   - API accessible from Docker container
+
+### Verify Docker Installation
+
 ```bash
-pip install -r requirements.txt
+docker --version
+docker-compose --version
 ```
 
-3. Configure environment variables:
+---
+
+## Quick Start
+
+### 1. Clone or Navigate to Project Directory
+
 ```bash
-cp .env.example .env
-# Edit .env with your Wazuh Indexer credentials
+cd /path/to/rag_wazuh
 ```
 
-4. Verify connection:
+### 2. Create Environment Configuration
+
+Copy the template and edit with your settings:
+
 ```bash
-# Test connection (will fail if indexer is not accessible)
-python -c "from wazuh_retrieval.client import WazuhIndexerClient; from wazuh_retrieval.config import IndexerConfig; client = WazuhIndexerClient(IndexerConfig.from_env()); client.connect()"
+cp .env.docker .env
+nano .env  # or vim, code, etc.
 ```
+
+**Required Settings** (update these):
+
+```env
+# Database
+DB_PASSWORD=your_secure_db_password
+
+# Wazuh Indexer
+WAZUH_INDEXER_HOST=your.wazuh.host
+WAZUH_INDEXER_PASSWORD=your_wazuh_password
+
+# OpenCTI
+OPENCTI_URL=http://your.opencti.host:8080
+OPENCTI_TOKEN=your_opencti_token
+
+# LLM
+LLM_BASE_URL=http://your.llm.host:11434
+```
+
+### 3. Start the Services
+
+```bash
+# Start in detached mode
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# View logs for specific service
+docker-compose logs -f wazuh-rag-app
+```
+
+### 4. Verify Deployment
+
+```bash
+# Check service status
+docker-compose ps
+
+# Check health status
+docker-compose ps | grep healthy
+
+# View cron logs
+docker-compose exec wazuh-rag-app tail -f /var/log/cron/cron.log
+```
+
+### 5. Access Database (Optional)
+
+**Via pgAdmin Web UI**:
+
+```bash
+# Start with pgAdmin
+docker-compose --profile management up -d
+
+# Access at: http://localhost:5050
+# Login: admin@wazuh-rag.local / (password from .env)
+```
+
+**Via psql**:
+
+```bash
+docker-compose exec postgres psql -U wazuh_user -d wazuh_rag
+
+# Example queries:
+SELECT COUNT(*) FROM alerts;
+SELECT COUNT(*) FROM knowledge;
+SELECT * FROM reports ORDER BY created_at DESC LIMIT 5;
+```
+
+---
 
 ## Configuration
 
-All configuration is done via environment variables. See `.env.example` for all available options.
+### Environment Variables Reference
 
-### Key Settings
+See `.env.docker` for all available configuration options.
+
+#### Core Settings
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WAZUH_INDEXER_HOST` | localhost | Wazuh Indexer hostname/IP |
-| `WAZUH_INDEXER_PORT` | 9200 | Indexer port |
-| `WAZUH_INDEXER_USER` | admin | Username for authentication |
-| `WAZUH_INDEXER_PASSWORD` | (required) | Password for authentication |
-| `WAZUH_POLL_INTERVAL` | 300 | Polling interval in seconds |
-| `WAZUH_BATCH_SIZE` | 1000 | Documents per batch |
+| `DB_HOST` | postgres | PostgreSQL hostname |
+| `DB_PORT` | 5432 | PostgreSQL port |
+| `DB_NAME` | wazuh_rag | Database name |
+| `DB_USER` | wazuh_user | Database user |
+| `DB_PASSWORD` | *required* | Database password |
+
+#### Wazuh Indexer
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `WAZUH_INDEXER_HOST` | *required* | Wazuh Indexer hostname |
+| `WAZUH_INDEXER_PORT` | 9200 | Wazuh Indexer port |
+| `WAZUH_INDEXER_USER` | admin | Indexer username |
+| `WAZUH_INDEXER_PASSWORD` | *required* | Indexer password |
+| `WAZUH_INDEXER_SSL` | true | Use SSL/TLS |
+| `WAZUH_INDEXER_VERIFY_CERTS` | false | Verify SSL certificates |
+| `WAZUH_POLL_INTERVAL` | 300 | Collection interval (seconds) |
+| `WAZUH_BATCH_SIZE` | 1000 | Alerts per batch |
 | `WAZUH_MIN_ALERT_LEVEL` | 0 | Minimum alert level (0-15) |
 
-## Usage
+#### OpenCTI
 
-### Basic Usage
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OPENCTI_URL` | *required* | OpenCTI base URL |
+| `OPENCTI_TOKEN` | *required* | OpenCTI API token |
+| `OPENCTI_VERIFY_SSL` | false | Verify SSL certificates |
 
-Run with SQLite output (default):
+#### LLM Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LLM_BASE_URL` | *required* | Ollama API base URL |
+| `LLM_MODEL` | llama3.1:8b-instruct-q4_K_M | Model name |
+| `LLM_TEMPERATURE` | 0.1 | Sampling temperature |
+| `LLM_TIMEOUT` | 120 | Request timeout (seconds) |
+
+### Cron Schedule Reference
+
+**Configured in `docker/crontab`** (requires image rebuild to change):
+
+| Job | Schedule | Description |
+|-----|----------|-------------|
+| wazuh_retrieval.py | `*/5 * * * *` | Every 5 minutes |
+| sync_opencti.py | `0 2 * * 0` | Every Sunday at 2 AM |
+| analyze_threats.py (hourly) | `15 * * * *` | Every hour at :15 |
+| analyze_threats.py (daily) | `0 3 * * *` | Every day at 3 AM |
+
+**To modify schedules**:
+
+1. Edit `docker/crontab`
+2. Rebuild image: `docker-compose build`
+3. Restart services: `docker-compose up -d`
+
+---
+
+## Deployment
+
+### Production Deployment
+
+#### Step 1: Prepare Environment
+
 ```bash
-python main.py
+# Create production directory
+mkdir -p /opt/wazuh-rag
+cd /opt/wazuh-rag
+
+# Copy files
+cp -r /path/to/rag_wazuh/* .
+
+# Set proper permissions
+chmod 600 .env
+chmod +x docker/entrypoint.sh
 ```
 
-Run with JSONL file output:
+#### Step 2: Configure Environment
+
 ```bash
-python main.py --output file
+cp .env.docker .env
+# Edit .env with production settings
 ```
 
-Run with debug logging:
+**Security Best Practices**:
+
+- Use strong passwords (minimum 16 characters)
+- Set `WAZUH_INDEXER_VERIFY_CERTS=true` in production
+- Set `OPENCTI_VERIFY_SSL=true` if using HTTPS
+- Restrict database port exposure (remove `ports:` section in docker-compose.yml)
+
+#### Step 3: Initialize Database
+
 ```bash
-python main.py --log-level DEBUG
+# First startup will run init-db.sql automatically
+docker-compose up -d postgres
+
+# Wait for database to be ready
+docker-compose logs -f postgres
+# Look for: "database system is ready to accept connections"
 ```
 
-### Command-Line Options
+#### Step 4: Start Application
 
-```
-usage: main.py [-h] [--output {sqlite,file}] [--log-level {DEBUG,INFO,WARNING,ERROR}]
-               [--log-file LOG_FILE] [--no-immediate-run]
-
-options:
-  --output {sqlite,file}    Output handler type (default: sqlite)
-  --log-level LEVEL         Logging level (default: INFO)
-  --log-file FILE           Optional log file path
-  --no-immediate-run        Skip immediate collection on start
-```
-
-### Output Formats
-
-#### SQLite (default)
-- **Location**: `./wazuh_alerts.db` (configurable)
-- **Use case**: SQL-based querying, reporting, moderate volumes
-- **Query example**:
 ```bash
-sqlite3 wazuh_alerts.db "SELECT rule_id, COUNT(*) as count FROM alerts GROUP BY rule_id ORDER BY count DESC LIMIT 10"
+docker-compose up -d
+
+# Monitor startup
+docker-compose logs -f wazuh-rag-app
 ```
 
-#### JSONL Files
-- **Location**: `./collected_alerts/alerts_YYYY-MM-DD.jsonl` (daily rotation)
-- **Use case**: Batch processing, file-based pipelines
-- **Read example**:
+#### Step 5: Verify Operation
+
 ```bash
-cat collected_alerts/alerts_2025-01-15.jsonl | jq '.rule_id' | sort | uniq -c
+# Check all services are healthy
+docker-compose ps
+
+# Verify database tables
+docker-compose exec postgres psql -U wazuh_user -d wazuh_rag -c "\dt"
+
+# Should show: alerts, knowledge, reports, sync_state
+
+# Check cron is running
+docker-compose exec wazuh-rag-app crontab -l
 ```
 
-## Normalized Schema
+### Scaling Considerations
 
-The module transforms Wazuh's nested alert structure into a flat, consistent schema:
+For high-volume environments:
 
-```json
-{
-  "timestamp": "2025-01-15T14:30:22.123Z",
-  "document_id": "abc123xyz",
-  "index_name": "wazuh-alerts-4.x-2025.01.15",
-  "agent_id": "001",
-  "agent_name": "web-server-01",
-  "agent_ip": "10.0.1.50",
-  "rule_id": "5710",
-  "rule_description": "sshd: Attempt to login using a non-existent user",
-  "rule_level": 5,
-  "rule_groups": ["syslog", "sshd", "authentication_failed"],
-  "mitre_techniques": ["T1110", "T1078"],
-  "mitre_tactics": ["Credential Access", "Initial Access"],
-  "source_ip": "192.168.1.100",
-  "dest_ip": "10.0.1.50",
-  "username": "admin123",
-  "full_log": "Jan 15 14:30:22 web-server sshd[12345]: Invalid user admin123 from 192.168.1.100"
-}
+1. **Increase Poll Interval** (if needed):
+   ```env
+   WAZUH_POLL_INTERVAL=60  # 1 minute for high-priority
+   ```
+
+2. **Increase Batch Size**:
+   ```env
+   WAZUH_BATCH_SIZE=5000  # For high throughput
+   ```
+
+3. **Database Tuning**:
+   - Increase PostgreSQL `max_connections`
+   - Tune `shared_buffers` and `work_mem`
+   - Consider connection pooling (pgBouncer)
+
+4. **Resource Limits** (add to docker-compose.yml):
+   ```yaml
+   services:
+     wazuh-rag-app:
+       deploy:
+         resources:
+           limits:
+             cpus: '2'
+             memory: 4G
+   ```
+
+---
+
+## Monitoring
+
+### Logs
+
+**View all logs**:
+```bash
+docker-compose logs -f
 ```
 
-### Guaranteed Fields
-Always present: `timestamp`, `document_id`, `index_name`, `agent_id`, `rule_id`, `rule_level`
-
-### Optional Fields
-Nullable, depend on alert type:
-- **Network**: `source_ip`, `dest_ip`, `source_port`, `dest_port`, `protocol`
-- **File**: `file_path`, `file_hash`
-- **Process**: `process_name`, `process_id`, `command_line`
-- **MITRE**: `mitre_techniques`, `mitre_tactics`
-
-## State Tracking
-
-The collector maintains state in `.wazuh_collector_state.json` (configurable) to:
-- Track last processed timestamp
-- Enable resume after crashes/restarts
-- Prevent duplicate processing
-
-**Note**: Delete this file to reset state and re-collect from beginning.
-
-## Integration with Phase 2+
-
-The normalized data is ready for Phase 2 analytics, enrichment, and RAG:
-
-### Option 1: Query SQLite
-```python
-import sqlite3
-conn = sqlite3.connect('./wazuh_alerts.db')
-cursor = conn.execute("""
-    SELECT * FROM alerts
-    WHERE rule_level >= 7
-    AND timestamp >= datetime('now', '-1 day')
-""")
-for row in cursor:
-    # Process high-severity alerts from last 24h
-    pass
+**View specific service**:
+```bash
+docker-compose logs -f wazuh-rag-app
+docker-compose logs -f postgres
 ```
 
-### Option 2: Read JSONL Files
-```python
-import json
-with open('./collected_alerts/alerts_2025-01-15.jsonl') as f:
-    for line in f:
-        alert = json.loads(line)
-        # Process alert
+**View cron execution logs**:
+```bash
+docker-compose exec wazuh-rag-app tail -f /var/log/cron/cron.log
 ```
 
-### Option 3: Consume from Kafka (future)
-```python
-from kafka import KafkaConsumer
-consumer = KafkaConsumer('wazuh.alerts.normalized')
-for message in consumer:
-    alert = json.loads(message.value)
-    # Process alert in real-time
+**View application component logs**:
+```bash
+# Inside container
+docker-compose exec wazuh-rag-app ls -lh /app/logs/
+
+# View specific log
+docker-compose exec wazuh-rag-app tail -f /app/logs/phase1_wazuh_retrieval.log
+docker-compose exec wazuh-rag-app tail -f /app/logs/phase2_knowledge_ingest.log
+docker-compose exec wazuh-rag-app tail -f /app/logs/phase3_analysis.log
 ```
+
+### Health Checks
+
+**Check service health**:
+```bash
+docker-compose ps
+# Look for "healthy" status
+```
+
+**Manual health check**:
+```bash
+# Database
+docker-compose exec postgres pg_isready -U wazuh_user
+
+# Cron daemon
+docker-compose exec wazuh-rag-app pgrep -f cron
+```
+
+### Database Queries
+
+**Alert statistics**:
+```sql
+SELECT COUNT(*) as total_alerts,
+       COUNT(DISTINCT agent_id) as unique_agents,
+       MIN(timestamp) as earliest,
+       MAX(timestamp) as latest
+FROM alerts;
+```
+
+**Knowledge base statistics**:
+```sql
+SELECT entity_type, COUNT(*) as count
+FROM knowledge
+GROUP BY entity_type
+ORDER BY count DESC;
+```
+
+**Recent reports**:
+```sql
+SELECT id, created_at, alerts_count, risk_score, summary
+FROM reports
+ORDER BY created_at DESC
+LIMIT 10;
+```
+
+---
 
 ## Troubleshooting
 
-### Connection Issues
-```
-IndexerConnectionError: Failed to connect to indexer
-```
-**Solution**: Check `WAZUH_INDEXER_HOST`, `WAZUH_INDEXER_PORT`, and network connectivity. Verify SSL settings.
+### Common Issues
 
-### Authentication Errors
-```
-TransportError: 401 Unauthorized
-```
-**Solution**: Verify `WAZUH_INDEXER_USER` and `WAZUH_INDEXER_PASSWORD` are correct.
+#### 1. Container Won't Start
 
-### No Alerts Collected
-```
-Collection complete. Total: 0 documents
-```
-**Solution**:
-- Check if alerts exist in the time range: `curl -u admin:password https://indexer:9200/wazuh-alerts-*/_count`
-- Verify `WAZUH_MIN_ALERT_LEVEL` is not filtering out all alerts
-- Check state file timestamp (delete to reset)
+**Symptoms**: `docker-compose up` fails or exits immediately
 
-### Performance Issues
-For high-volume environments (>10k alerts/min):
-- Increase `WAZUH_BATCH_SIZE` (e.g., 5000)
-- Decrease `WAZUH_POLL_INTERVAL` (e.g., 60 seconds)
-- Consider Kafka output for better scalability
-- Use multiple collector instances with time-range sharding
+**Solutions**:
 
-## Development
-
-### Project Structure
-```
-rag_wazuh/
-├── wazuh_retrieval/          # Main module
-│   ├── collectors/           # Data collection logic
-│   │   ├── base.py          # Base collector class
-│   │   └── alerts.py        # Alert collector
-│   ├── schema/              # Schema transformation
-│   │   ├── mappings.py      # Field mappings
-│   │   └── transformer.py   # Transform logic
-│   ├── tracking/            # State tracking
-│   │   └── state.py         # State management
-│   ├── output/              # Output handlers
-│   │   ├── file_handler.py  # JSONL output
-│   │   ├── sqlite_handler.py # SQLite output
-│   │   └── kafka_handler.py  # Kafka output
-│   ├── client.py            # OpenSearch client
-│   ├── config.py            # Configuration
-│   ├── scheduler.py         # Scheduling logic
-│   ├── utils.py             # Utilities
-│   └── exceptions.py        # Custom exceptions
-├── main.py                  # Application entry point
-├── requirements.txt         # Dependencies
-└── .env.example            # Configuration template
-```
-
-### Running Tests (future)
 ```bash
-pytest tests/
+# Check logs
+docker-compose logs
+
+# Verify environment variables
+docker-compose config
+
+# Check for port conflicts
+sudo netstat -tulpn | grep 5432
 ```
 
-### Code Style
+#### 2. Database Connection Failed
+
+**Symptoms**: "could not connect to PostgreSQL"
+
+**Solutions**:
+
 ```bash
-black wazuh_retrieval/
-flake8 wazuh_retrieval/
+# Verify database is running
+docker-compose ps postgres
+
+# Check database logs
+docker-compose logs postgres
+
+# Test connection manually
+docker-compose exec postgres psql -U wazuh_user -d wazuh_rag
+
+# Verify credentials in .env
+cat .env | grep DB_
 ```
 
-## Roadmap
+#### 3. Wazuh Indexer Connection Failed
 
-- [x] Phase 1: Data collection and normalization
-- [ ] Phase 2: Threat intelligence enrichment (OpenCTI integration)
-- [ ] Phase 3: RAG-based threat reporting with LLM
-- [ ] Phase 4: Real-time alerting and correlation
-- [ ] Historical backfill utility
-- [ ] Prometheus metrics export
-- [ ] Docker containerization
+**Symptoms**: "Failed to connect to Wazuh Indexer"
 
-## License
+**Solutions**:
 
-[Your License Here]
+```bash
+# Test connectivity from container
+docker-compose exec wazuh-rag-app curl -k -u admin:password https://WAZUH_HOST:9200
 
-## Contributing
+# Verify environment variables
+docker-compose exec wazuh-rag-app printenv | grep WAZUH
 
-Contributions welcome! Please open an issue or PR.
+# Check SSL settings
+# If using self-signed certs, set WAZUH_INDEXER_VERIFY_CERTS=false
+```
+
+#### 4. Cron Jobs Not Running
+
+**Symptoms**: No data being collected
+
+**Solutions**:
+
+```bash
+# Check cron is running
+docker-compose exec wazuh-rag-app pgrep cron
+
+# Verify crontab
+docker-compose exec wazuh-rag-app crontab -l
+
+# Check cron logs
+docker-compose exec wazuh-rag-app tail -100 /var/log/cron/cron.log
+
+# Manually test a job
+docker-compose exec wazuh-rag-app python3 /app/wazuh_retrieval.py
+```
+
+#### 5. FAISS Index Issues
+
+**Symptoms**: "Failed to load FAISS index"
+
+**Solutions**:
+
+```bash
+# Check FAISS index exists
+docker-compose exec wazuh-rag-app ls -lh /app/data/faiss_index/
+
+# Remove corrupted index (will rebuild on next sync)
+docker-compose exec wazuh-rag-app rm /app/data/faiss_index/knowledge.index
+
+# Manually trigger sync
+docker-compose exec wazuh-rag-app python3 /app/sync_opencti.py --full
+```
+
+### Debug Mode
+
+Enable debug logging:
+
+```bash
+# Stop services
+docker-compose down
+
+# Edit .env
+LOG_LEVEL=DEBUG
+
+# Restart
+docker-compose up -d
+
+# View detailed logs
+docker-compose logs -f wazuh-rag-app
+```
+
+### Reset Everything
+
+**⚠️ WARNING: This will delete all data**
+
+```bash
+# Stop and remove containers, volumes
+docker-compose down -v
+
+# Remove images
+docker-compose down --rmi all
+
+# Start fresh
+docker-compose up -d
+```
+
+---
+
+## Maintenance
+
+### Backup
+
+#### Database Backup
+
+```bash
+# Create backup
+docker-compose exec postgres pg_dump -U wazuh_user wazuh_rag > backup_$(date +%Y%m%d).sql
+
+# Restore backup
+docker-compose exec -T postgres psql -U wazuh_user wazuh_rag < backup_20251107.sql
+```
+
+#### FAISS Index Backup
+
+```bash
+# Backup FAISS data
+docker cp wazuh-rag-app:/app/data/faiss_index ./faiss_backup_$(date +%Y%m%d)
+
+# Restore
+docker cp ./faiss_backup_20251107 wazuh-rag-app:/app/data/faiss_index
+```
+
+### Updates
+
+#### Update Application Code
+
+```bash
+# Pull latest code
+git pull
+
+# Rebuild image
+docker-compose build --no-cache
+
+# Restart services
+docker-compose down
+docker-compose up -d
+```
+
+#### Update Python Dependencies
+
+```bash
+# Edit requirements.txt
+# Then rebuild
+docker-compose build --no-cache wazuh-rag-app
+docker-compose up -d wazuh-rag-app
+```
+
+### Cleanup
+
+#### Remove Old Logs
+
+```bash
+# Inside container
+docker-compose exec wazuh-rag-app find /app/logs -name "*.log" -mtime +30 -delete
+docker-compose exec wazuh-rag-app find /var/log/cron -name "*.log" -mtime +30 -delete
+```
+
+#### Vacuum Database
+
+```bash
+docker-compose exec postgres psql -U wazuh_user -d wazuh_rag -c "VACUUM ANALYZE;"
+```
+
+---
+
+## Additional Resources
+
+- **Project Documentation**: See `PROJECT.md` for architecture details
+- **Installation Notes**: See `INSTALLATION_NOTES.md` for development setup
+- **Phase Summaries**: See `PHASE_4.2_SUMMARY.md` for latest updates
+
+---
 
 ## Support
 
-For issues or questions, please open a GitHub issue or contact [your-contact].
-# wazuh-rag
+For issues, questions, or contributions:
+
+1. Check the troubleshooting section above
+2. Review application logs
+3. Consult the project documentation
+4. Check GitHub issues (if applicable)
+
+---
+
+**Generated**: 2025-11-07
+**Version**: 1.0.0
+**Docker Compose Version**: 3.8

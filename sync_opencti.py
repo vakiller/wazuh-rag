@@ -21,6 +21,14 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 import json
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv not installed, environment variables must be set manually
+    pass
+
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -30,6 +38,7 @@ from knowledge_ingest import (
     EmbeddingModel,
     KnowledgeStorage
 )
+from knowledge_ingest.storage_pg import KnowledgeStoragePostgres
 from knowledge_ingest.opencti_client import OpenCTIClientError
 from knowledge_ingest.embedder import EmbeddingModelError
 from knowledge_ingest.storage import StorageError
@@ -77,9 +86,13 @@ def load_config(config_path: str = "knowledge_ingest/config.yaml") -> Dict[str, 
     with open(config_file, 'r') as f:
         config = yaml.safe_load(f)
 
-    # Override API token from environment if set
+    # Override from environment variables if set
+    if 'OPENCTI_URL' in os.environ:
+        config['opencti']['url'] = os.environ['OPENCTI_URL']
     if 'OPENCTI_TOKEN' in os.environ:
         config['opencti']['api_token'] = os.environ['OPENCTI_TOKEN']
+    if 'OPENCTI_VERIFY_SSL' in os.environ:
+        config['opencti']['verify_ssl'] = os.environ['OPENCTI_VERIFY_SSL'].lower() in ('true', '1', 'yes')
 
     return config
 
@@ -292,14 +305,23 @@ def main():
             normalize=embedding_config.get('normalize', True)
         )
 
-        # Storage
+        # Storage - use PostgreSQL if DB_HOST is set, otherwise use SQLite
         storage_config = config['storage']
-        storage = KnowledgeStorage(
-            faiss_index_path=storage_config['faiss_index_path'],
-            metadata_db_path=storage_config['metadata_db_path'],
-            embedding_dim=embedder.get_dimension(),
-            index_type=storage_config.get('index_type', 'IndexFlatIP')
-        )
+        if os.getenv('DB_HOST'):
+            logger.info("Using PostgreSQL storage backend")
+            storage = KnowledgeStoragePostgres(
+                faiss_index_path=storage_config['faiss_index_path'],
+                embedding_dim=embedder.get_dimension(),
+                index_type=storage_config.get('index_type', 'IndexFlatIP')
+            )
+        else:
+            logger.info("Using SQLite storage backend")
+            storage = KnowledgeStorage(
+                faiss_index_path=storage_config['faiss_index_path'],
+                metadata_db_path=storage_config['metadata_db_path'],
+                embedding_dim=embedder.get_dimension(),
+                index_type=storage_config.get('index_type', 'IndexFlatIP')
+            )
 
         # Show stats if requested
         if args.stats:

@@ -180,15 +180,18 @@ class OpenCTIClient:
         Returns:
             Tuple of (entities list, page_info dict)
         """
-        # Build filter string
+        # Build filter string using FilterGroup structure (OpenCTI v5+)
         filter_str = ""
         if filters:
             filter_items = []
             for f in filters:
+                # Format values array for GraphQL (requires double quotes)
+                values_str = '[' + ', '.join(f'"{v}"' for v in f["values"]) + ']'
                 filter_items.append(
-                    f'{{key: "{f["key"]}", values: {f["values"]}, operator: {f["operator"]}}}'
+                    f'{{key: "{f["key"]}", values: {values_str}, operator: {f["operator"]}}}'
                 )
-            filter_str = f'filters: [{", ".join(filter_items)}]'
+            # Wrap in FilterGroup structure
+            filter_str = f'filters: {{mode: and, filters: [{", ".join(filter_items)}], filterGroups: []}}'
 
         # Build query based on entity type
         query = self._build_entity_query(graphql_type, first, after, filter_str)

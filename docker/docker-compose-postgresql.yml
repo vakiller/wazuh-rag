@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres-wazuh-rag
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wazuh_rag
+      POSTGRES_USER: wazuh_user
+      POSTGRES_PASSWORD: test_password_123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - wazuhnet
+
+volumes:
+  postgres_data:
+
+networks:
+  wazuhnet:
+

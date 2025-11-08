@@ -1,0 +1,38 @@
+# RAG Wazuh System Cron Jobs
+# Format: minute hour day month weekday command
+#
+# All jobs log to /var/log/cron/cron.log and their respective component logs
+
+# Load environment variables for all cron jobs
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PYTHON=/usr/local/bin/python3
+
+# ============================================================================
+# Phase 1: Wazuh Alert Retrieval - Every 5 minutes
+# ============================================================================
+*/5 * * * * cd /app && /usr/local/bin/python3 wazuh_retrieval.py >> /var/log/cron/cron.log 2>&1
+
+# ============================================================================
+# Phase 2: Knowledge Ingestion (OpenCTI Sync) - Every 7 days (weekly on Sunday at 2 AM)
+# ============================================================================
+0 2 * * 0 cd /app && /usr/local/bin/python3 sync_opencti.py --incremental >> /var/log/cron/cron.log 2>&1
+
+# ============================================================================
+# Phase 3: LLM Analysis
+# ============================================================================
+
+# Hourly analysis (every hour at minute 15)
+15 * * * * cd /app && /usr/local/bin/python3 analyze_threats.py --analyze-now --window 60 >> /var/log/cron/cron.log 2>&1
+
+# Daily analysis (every day at 3 AM, analyzing last 24 hours)
+0 3 * * * cd /app && /usr/local/bin/python3 analyze_threats.py --analyze-now --window 1440 >> /var/log/cron/cron.log 2>&1
+
+# ============================================================================
+# Maintenance
+# ============================================================================
+
+# Log rotation marker (helps with debugging)
+0 0 * * * echo "=== Daily marker $(date) ===" >> /var/log/cron/cron.log 2>&1
+
+# Empty line required at end of crontab file

@@ -11,6 +11,7 @@
 opensearch-py==2.3.1         # OpenSearch/Elasticsearch client for Wazuh Indexer
 apscheduler==3.10.4          # Scheduler for periodic collection
 requests>=2.31.0             # HTTP library (dependency for opensearch-py)
+psycopg2-binary>=2.9.9       # PostgreSQL database adapter (REQUIRED for Docker)
 
 # Optional dependencies (uncomment as needed)
 # kafka-python==2.0.2        # For Kafka output handler
@@ -34,5 +35,6 @@ urllib3>=1.26.0,<2.0.0       # HTTP library (must be <2.0.0 for opensearch-py co
 # flake8>=6.0.0
 
 # Phase 3: LLM Analysis dependencies
-langchain-community>=0.3.0   # LangChain community integrations (Ollama)
+langchain-ollama>=0.1.0      # LangChain Ollama integration (new official package)
+langchain-community>=0.3.0   # LangChain community integrations (fallback)
 langchain-core>=0.3.0        # LangChain core library

@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: wazuh-rag-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-wazuh_rag}
+      POSTGRES_USER: ${DB_USER:-wazuh_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-wazuh_password}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - wazuh-rag-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-wazuh_user} -d ${DB_NAME:-wazuh_rag}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RAG Wazuh Application Service
+  wazuh-rag-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wazuh-rag-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database Configuration
+      DB_HOST: postgres
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-wazuh_rag}
+      DB_USER: ${DB_USER:-wazuh_user}
+      DB_PASSWORD: ${DB_PASSWORD:-wazuh_password}
+
+      # Wazuh Indexer Configuration
+      WAZUH_INDEXER_HOST: ${WAZUH_INDEXER_HOST}
+      WAZUH_INDEXER_PORT: ${WAZUH_INDEXER_PORT:-9200}
+      WAZUH_INDEXER_USER: ${WAZUH_INDEXER_USER:-admin}
+      WAZUH_INDEXER_PASSWORD: ${WAZUH_INDEXER_PASSWORD}
+      WAZUH_INDEXER_SSL: ${WAZUH_INDEXER_SSL:-true}
+      WAZUH_INDEXER_VERIFY_CERTS: ${WAZUH_INDEXER_VERIFY_CERTS:-false}
+
+      # Wazuh Collection Settings
+      WAZUH_POLL_INTERVAL: ${WAZUH_POLL_INTERVAL:-300}
+      WAZUH_BATCH_SIZE: ${WAZUH_BATCH_SIZE:-1000}
+      WAZUH_MIN_ALERT_LEVEL: ${WAZUH_MIN_ALERT_LEVEL:-0}
+
+      # OpenCTI Configuration
+      OPENCTI_URL: ${OPENCTI_URL}
+      OPENCTI_TOKEN: ${OPENCTI_TOKEN}
+      OPENCTI_VERIFY_SSL: ${OPENCTI_VERIFY_SSL:-false}
+
+      # LLM Configuration
+      LLM_BASE_URL: ${LLM_BASE_URL}
+      LLM_MODEL: ${LLM_MODEL:-llama3.1:8b-instruct-q4_K_M}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.1}
+      LLM_TIMEOUT: ${LLM_TIMEOUT:-120}
+
+      # Application Settings
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      TZ: ${TZ:-UTC}
+    volumes:
+      # Persistent data for FAISS index
+      - faiss_data:/app/data/faiss_index
+      # Application logs
+      - app_logs:/app/logs
+      # Cron logs
+      - cron_logs:/var/log/cron
+    networks:
+      - wazuh-rag-network
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f cron || exit 1"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: wazuh-rag-pgadmin
+    restart: unless-stopped
+    profiles:
+      - management
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@wazuh-rag.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - wazuh-rag-network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  faiss_data:
+    driver: local
+  app_logs:
+    driver: local
+  cron_logs:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  wazuh-rag-network:
+    driver: bridge

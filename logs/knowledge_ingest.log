@@ -448,3 +448,362 @@
 2025-11-04 22:37:20 - __main__ - INFO - Total entities synced: 3704
 2025-11-04 22:37:20 - __main__ - INFO - Storage: KnowledgeStorage(vectors=3704, dim=384, index=IndexFlatIP)
 2025-11-04 22:37:20 - __main__ - INFO - ============================================================
+2025-11-08 09:36:21 - __main__ - INFO - ============================================================
+2025-11-08 09:36:21 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 09:36:21 - __main__ - INFO - ============================================================
+2025-11-08 09:36:21 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 09:36:21 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 09:36:27 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 09:36:31 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 09:36:31 - __main__ - INFO - Using SQLite storage backend
+2025-11-08 09:36:31 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-08 09:36:31 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 09:36:31 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 09:36:31 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-08 09:36:31 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-08 09:36:31 - __main__ - INFO - Incremental sync from: 2025-11-04 15:36:28.971434
+2025-11-08 09:36:31 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 09:36:31 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-08 09:36:31 - __main__ - ERROR - Sync failed for attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - ERROR - Failed to sync attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - INFO - Starting sync for entity type: malware
+2025-11-08 09:36:31 - knowledge_ingest.opencti_client - INFO - Fetching malware entities (max: 10000)
+2025-11-08 09:36:31 - __main__ - ERROR - Sync failed for malware: Failed to fetch Malware page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - ERROR - Failed to sync malware: Failed to fetch Malware page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - INFO - Starting sync for entity type: course-of-action
+2025-11-08 09:36:31 - knowledge_ingest.opencti_client - INFO - Fetching course-of-action entities (max: 10000)
+2025-11-08 09:36:31 - __main__ - ERROR - Sync failed for course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - ERROR - Failed to sync course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - INFO - Starting sync for entity type: intrusion-set
+2025-11-08 09:36:31 - knowledge_ingest.opencti_client - INFO - Fetching intrusion-set entities (max: 10000)
+2025-11-08 09:36:31 - __main__ - ERROR - Sync failed for intrusion-set: Failed to fetch IntrusionSet page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - ERROR - Failed to sync intrusion-set: Failed to fetch IntrusionSet page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - INFO - Starting sync for entity type: indicator
+2025-11-08 09:36:31 - knowledge_ingest.opencti_client - INFO - Fetching indicator entities (max: 10000)
+2025-11-08 09:36:31 - __main__ - ERROR - Sync failed for indicator: Failed to fetch Indicator page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - ERROR - Failed to sync indicator: Failed to fetch Indicator page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - INFO - Starting sync for entity type: report
+2025-11-08 09:36:31 - knowledge_ingest.opencti_client - INFO - Fetching report entities (max: 10000)
+2025-11-08 09:36:31 - __main__ - ERROR - Sync failed for report: Failed to fetch Report page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - __main__ - ERROR - Failed to sync report: Failed to fetch Report page: Query execution failed: GraphQL errors: Syntax Error: Unexpected single quote character ('), did you mean to use a double quote (")?
+2025-11-08 09:36:31 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 09:36:31 - __main__ - INFO - ============================================================
+2025-11-08 09:36:31 - __main__ - INFO - Sync Complete
+2025-11-08 09:36:31 - __main__ - INFO - Total entities synced: 0
+2025-11-08 09:36:31 - __main__ - INFO - Storage: KnowledgeStorage(vectors=3704, dim=384, index=IndexFlatIP)
+2025-11-08 09:36:31 - __main__ - INFO - ============================================================
+2025-11-08 09:38:16 - __main__ - INFO - ============================================================
+2025-11-08 09:38:16 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 09:38:16 - __main__ - INFO - ============================================================
+2025-11-08 09:38:16 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 09:38:16 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 09:38:21 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 09:38:25 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 09:38:25 - __main__ - INFO - Using SQLite storage backend
+2025-11-08 09:38:25 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-08 09:38:25 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 09:38:25 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 09:38:25 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-08 09:38:25 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-08 09:38:25 - __main__ - INFO - Incremental sync from: 2025-11-08 02:36:31.500470
+2025-11-08 09:38:25 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 09:38:25 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-08 09:38:25 - __main__ - ERROR - Sync failed for attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - ERROR - Failed to sync attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - INFO - Starting sync for entity type: malware
+2025-11-08 09:38:25 - knowledge_ingest.opencti_client - INFO - Fetching malware entities (max: 10000)
+2025-11-08 09:38:25 - __main__ - ERROR - Sync failed for malware: Failed to fetch Malware page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - ERROR - Failed to sync malware: Failed to fetch Malware page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - INFO - Starting sync for entity type: course-of-action
+2025-11-08 09:38:25 - knowledge_ingest.opencti_client - INFO - Fetching course-of-action entities (max: 10000)
+2025-11-08 09:38:25 - __main__ - ERROR - Sync failed for course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - ERROR - Failed to sync course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - INFO - Starting sync for entity type: intrusion-set
+2025-11-08 09:38:25 - knowledge_ingest.opencti_client - INFO - Fetching intrusion-set entities (max: 10000)
+2025-11-08 09:38:25 - __main__ - ERROR - Sync failed for intrusion-set: Failed to fetch IntrusionSet page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - ERROR - Failed to sync intrusion-set: Failed to fetch IntrusionSet page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - INFO - Starting sync for entity type: indicator
+2025-11-08 09:38:25 - knowledge_ingest.opencti_client - INFO - Fetching indicator entities (max: 10000)
+2025-11-08 09:38:25 - __main__ - ERROR - Sync failed for indicator: Failed to fetch Indicator page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - ERROR - Failed to sync indicator: Failed to fetch Indicator page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - INFO - Starting sync for entity type: report
+2025-11-08 09:38:25 - knowledge_ingest.opencti_client - INFO - Fetching report entities (max: 10000)
+2025-11-08 09:38:25 - __main__ - ERROR - Sync failed for report: Failed to fetch Report page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - __main__ - ERROR - Failed to sync report: Failed to fetch Report page: Query execution failed: GraphQL errors: Expected value of type "FilterGroup", found [{key: "updated_at", values: ["2025-11-08T02:36:31.500470"], operator: gt}].
+2025-11-08 09:38:25 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 09:38:25 - __main__ - INFO - ============================================================
+2025-11-08 09:38:25 - __main__ - INFO - Sync Complete
+2025-11-08 09:38:25 - __main__ - INFO - Total entities synced: 0
+2025-11-08 09:38:25 - __main__ - INFO - Storage: KnowledgeStorage(vectors=3704, dim=384, index=IndexFlatIP)
+2025-11-08 09:38:25 - __main__ - INFO - ============================================================
+2025-11-08 09:39:42 - __main__ - INFO - ============================================================
+2025-11-08 09:39:42 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 09:39:42 - __main__ - INFO - ============================================================
+2025-11-08 09:39:42 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 09:39:42 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 09:39:47 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 09:39:51 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 09:39:51 - __main__ - INFO - Using SQLite storage backend
+2025-11-08 09:39:51 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-08 09:39:51 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 09:39:51 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 09:39:51 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-08 09:39:51 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-08 09:39:51 - __main__ - INFO - Incremental sync from: 2025-11-08 02:38:25.803302
+2025-11-08 09:39:51 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 09:39:51 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-08 09:39:51 - __main__ - ERROR - Sync failed for attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - ERROR - Failed to sync attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - INFO - Starting sync for entity type: malware
+2025-11-08 09:39:51 - knowledge_ingest.opencti_client - INFO - Fetching malware entities (max: 10000)
+2025-11-08 09:39:51 - __main__ - ERROR - Sync failed for malware: Failed to fetch Malware page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - ERROR - Failed to sync malware: Failed to fetch Malware page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - INFO - Starting sync for entity type: course-of-action
+2025-11-08 09:39:51 - knowledge_ingest.opencti_client - INFO - Fetching course-of-action entities (max: 10000)
+2025-11-08 09:39:51 - __main__ - ERROR - Sync failed for course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - ERROR - Failed to sync course-of-action: Failed to fetch CourseOfAction page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - INFO - Starting sync for entity type: intrusion-set
+2025-11-08 09:39:51 - knowledge_ingest.opencti_client - INFO - Fetching intrusion-set entities (max: 10000)
+2025-11-08 09:39:51 - __main__ - ERROR - Sync failed for intrusion-set: Failed to fetch IntrusionSet page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - ERROR - Failed to sync intrusion-set: Failed to fetch IntrusionSet page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - INFO - Starting sync for entity type: indicator
+2025-11-08 09:39:51 - knowledge_ingest.opencti_client - INFO - Fetching indicator entities (max: 10000)
+2025-11-08 09:39:51 - __main__ - ERROR - Sync failed for indicator: Failed to fetch Indicator page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - ERROR - Failed to sync indicator: Failed to fetch Indicator page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - INFO - Starting sync for entity type: report
+2025-11-08 09:39:51 - knowledge_ingest.opencti_client - INFO - Fetching report entities (max: 10000)
+2025-11-08 09:39:51 - __main__ - ERROR - Sync failed for report: Failed to fetch Report page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - __main__ - ERROR - Failed to sync report: Failed to fetch Report page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:39:51 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 09:39:51 - __main__ - INFO - ============================================================
+2025-11-08 09:39:51 - __main__ - INFO - Sync Complete
+2025-11-08 09:39:51 - __main__ - INFO - Total entities synced: 0
+2025-11-08 09:39:51 - __main__ - INFO - Storage: KnowledgeStorage(vectors=3704, dim=384, index=IndexFlatIP)
+2025-11-08 09:39:51 - __main__ - INFO - ============================================================
+2025-11-08 09:43:50 - __main__ - INFO - ============================================================
+2025-11-08 09:43:50 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 09:43:50 - __main__ - INFO - ============================================================
+2025-11-08 09:43:50 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 09:43:50 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 09:43:55 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 09:43:59 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 09:43:59 - __main__ - INFO - Using SQLite storage backend
+2025-11-08 09:43:59 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, SQLite: ./data/faiss_index/knowledge.db, dim: 384)
+2025-11-08 09:43:59 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 09:43:59 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 09:43:59 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-08 09:43:59 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-08 09:43:59 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 09:43:59 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 1)
+2025-11-08 09:43:59 - __main__ - ERROR - Sync failed for attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:43:59 - __main__ - ERROR - Failed to sync attack-pattern: Failed to fetch AttackPattern page: Query execution failed: GraphQL errors: You must be logged in to do this.
+2025-11-08 09:43:59 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 09:43:59 - __main__ - INFO - ============================================================
+2025-11-08 09:43:59 - __main__ - INFO - Sync Complete
+2025-11-08 09:43:59 - __main__ - INFO - Total entities synced: 0
+2025-11-08 09:43:59 - __main__ - INFO - Storage: KnowledgeStorage(vectors=3704, dim=384, index=IndexFlatIP)
+2025-11-08 09:43:59 - __main__ - INFO - ============================================================
+2025-11-08 09:46:44 - __main__ - INFO - ============================================================
+2025-11-08 09:46:44 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 09:46:44 - __main__ - INFO - ============================================================
+2025-11-08 09:46:44 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 09:46:44 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 02:46:49 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 02:46:53 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 02:46:53 - __main__ - INFO - Using PostgreSQL storage backend
+2025-11-08 02:46:53 - knowledge_ingest.storage_pg - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, PostgreSQL: localhost/wazuh_rag, dim: 384)
+2025-11-08 02:46:53 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 02:46:53 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 02:46:53 - knowledge_ingest.storage_pg - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-08 02:46:53 - knowledge_ingest.storage_pg - INFO - Connected to PostgreSQL metadata database
+2025-11-08 02:46:53 - knowledge_ingest.storage_pg - INFO - Knowledge table verified
+2025-11-08 02:46:53 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 02:46:53 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 1)
+2025-11-08 02:47:23 - __main__ - ERROR - Sync failed for attack-pattern: Failed to fetch AttackPattern page: HTTP request failed: HTTPConnectionPool(host='100.114.206.116', port=8080): Max retries exceeded with url: /graphql (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x7e20e7f1a5c0>, 'Connection to 100.114.206.116 timed out. (connect timeout=30)'))
+2025-11-08 02:47:23 - __main__ - ERROR - Failed to sync attack-pattern: Failed to fetch AttackPattern page: HTTP request failed: HTTPConnectionPool(host='100.114.206.116', port=8080): Max retries exceeded with url: /graphql (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x7e20e7f1a5c0>, 'Connection to 100.114.206.116 timed out. (connect timeout=30)'))
+2025-11-08 02:47:23 - __main__ - ERROR - Unexpected error: 'KnowledgeStoragePostgres' object has no attribute 'save'
+Traceback (most recent call last):
+  File "/home/aid3n/security_projects/rag_wazuh/sync_opencti.py", line 392, in main
+    storage.save()
+AttributeError: 'KnowledgeStoragePostgres' object has no attribute 'save'
+2025-11-08 19:35:35 - __main__ - INFO - ============================================================
+2025-11-08 19:35:35 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 19:35:35 - __main__ - INFO - ============================================================
+2025-11-08 19:35:35 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 19:35:35 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 12:35:42 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 12:35:46 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 12:35:46 - __main__ - INFO - Using PostgreSQL storage backend
+2025-11-08 12:35:46 - knowledge_ingest.storage_pg - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, PostgreSQL: localhost/wazuh_rag, dim: 384)
+2025-11-08 12:35:46 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 12:35:46 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 12:35:46 - knowledge_ingest.storage_pg - INFO - Loaded existing FAISS index with 3704 vectors
+2025-11-08 12:35:46 - knowledge_ingest.storage_pg - INFO - Connected to PostgreSQL metadata database
+2025-11-08 12:35:46 - knowledge_ingest.storage_pg - INFO - Knowledge table verified
+2025-11-08 12:35:46 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 12:35:46 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 1)
+2025-11-08 12:35:48 - knowledge_ingest.opencti_client - INFO - Reached max items limit: 1
+2025-11-08 12:35:48 - knowledge_ingest.storage_pg - INFO - Added 1 entities (vector IDs: 3704-3704)
+2025-11-08 12:35:48 - __main__ - INFO - Completed sync for attack-pattern: 1 entities
+2025-11-08 12:35:48 - knowledge_ingest.storage_pg - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 12:35:48 - __main__ - INFO - ============================================================
+2025-11-08 12:35:48 - __main__ - INFO - Sync Complete
+2025-11-08 12:35:48 - __main__ - INFO - Total entities synced: 1
+2025-11-08 12:35:48 - __main__ - INFO - Storage: <knowledge_ingest.storage_pg.KnowledgeStoragePostgres object at 0x742bcd03ada0>
+2025-11-08 12:35:48 - __main__ - INFO - ============================================================
+2025-11-08 19:39:54 - __main__ - INFO - ============================================================
+2025-11-08 19:39:54 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 19:39:54 - __main__ - INFO - ============================================================
+2025-11-08 19:39:54 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 19:39:54 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 12:39:59 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 12:40:02 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 12:40:02 - __main__ - INFO - Using PostgreSQL storage backend
+2025-11-08 12:40:02 - knowledge_ingest.storage_pg - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, PostgreSQL: localhost/wazuh_rag, dim: 384)
+2025-11-08 12:40:02 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 12:40:02 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 12:40:02 - knowledge_ingest.storage_pg - INFO - Loaded existing FAISS index with 3705 vectors
+2025-11-08 12:40:02 - knowledge_ingest.storage_pg - INFO - Connected to PostgreSQL metadata database
+2025-11-08 12:40:02 - knowledge_ingest.storage_pg - INFO - Knowledge table verified
+2025-11-08 12:40:02 - __main__ - INFO - Incremental sync from: 2025-11-08 12:35:46.445865
+2025-11-08 12:40:02 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 12:40:02 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-08 12:40:03 - knowledge_ingest.opencti_client - INFO - Completed fetching 0 attack-pattern entities
+2025-11-08 12:40:03 - __main__ - INFO - Completed sync for attack-pattern: 0 entities
+2025-11-08 12:40:03 - knowledge_ingest.storage_pg - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 12:40:03 - __main__ - INFO - ============================================================
+2025-11-08 12:40:03 - __main__ - INFO - Sync Complete
+2025-11-08 12:40:03 - __main__ - INFO - Total entities synced: 0
+2025-11-08 12:40:03 - __main__ - INFO - Storage: <knowledge_ingest.storage_pg.KnowledgeStoragePostgres object at 0x78a8d28c3700>
+2025-11-08 12:40:03 - __main__ - INFO - ============================================================
+2025-11-08 19:40:29 - __main__ - INFO - ============================================================
+2025-11-08 19:40:29 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 19:40:29 - __main__ - INFO - ============================================================
+2025-11-08 19:40:29 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 19:40:29 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 12:40:34 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 12:40:37 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 12:40:37 - __main__ - INFO - Using PostgreSQL storage backend
+2025-11-08 12:40:37 - knowledge_ingest.storage_pg - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, PostgreSQL: localhost/wazuh_rag, dim: 384)
+2025-11-08 12:40:37 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 12:40:37 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 12:40:37 - knowledge_ingest.storage_pg - INFO - Loaded existing FAISS index with 3705 vectors
+2025-11-08 12:40:37 - knowledge_ingest.storage_pg - INFO - Connected to PostgreSQL metadata database
+2025-11-08 12:40:37 - knowledge_ingest.storage_pg - INFO - Knowledge table verified
+2025-11-08 12:40:37 - __main__ - INFO - Incremental sync from: 2025-11-08 12:40:02.913002
+2025-11-08 12:40:37 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 12:40:37 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-08 12:40:37 - knowledge_ingest.opencti_client - INFO - Completed fetching 0 attack-pattern entities
+2025-11-08 12:40:37 - __main__ - INFO - Completed sync for attack-pattern: 0 entities
+2025-11-08 12:40:37 - knowledge_ingest.storage_pg - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 12:40:37 - __main__ - INFO - ============================================================
+2025-11-08 12:40:37 - __main__ - INFO - Sync Complete
+2025-11-08 12:40:37 - __main__ - INFO - Total entities synced: 0
+2025-11-08 12:40:37 - __main__ - INFO - Storage: <knowledge_ingest.storage_pg.KnowledgeStoragePostgres object at 0x749c50cbf700>
+2025-11-08 12:40:37 - __main__ - INFO - ============================================================
+2025-11-08 19:41:53 - __main__ - INFO - ============================================================
+2025-11-08 19:41:53 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 19:41:53 - __main__ - INFO - ============================================================
+2025-11-08 19:41:53 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 19:41:53 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 12:41:58 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 12:42:01 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 12:42:01 - __main__ - INFO - Using PostgreSQL storage backend
+2025-11-08 12:42:01 - knowledge_ingest.storage_pg - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, PostgreSQL: localhost/wazuh_rag, dim: 384)
+2025-11-08 12:42:01 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 12:42:01 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 12:42:01 - knowledge_ingest.storage_pg - INFO - Loaded existing FAISS index with 3705 vectors
+2025-11-08 12:42:01 - knowledge_ingest.storage_pg - INFO - Connected to PostgreSQL metadata database
+2025-11-08 12:42:01 - knowledge_ingest.storage_pg - INFO - Knowledge table verified
+2025-11-08 12:42:01 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 12:42:01 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-08 12:42:04 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 3705-3804)
+2025-11-08 12:42:04 - __main__ - INFO - Processed 100 attack-pattern entities
+2025-11-08 12:42:06 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 3805-3904)
+2025-11-08 12:42:06 - __main__ - INFO - Processed 200 attack-pattern entities
+2025-11-08 12:42:09 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 3905-4004)
+2025-11-08 12:42:09 - __main__ - INFO - Processed 300 attack-pattern entities
+2025-11-08 12:42:11 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4005-4104)
+2025-11-08 12:42:11 - __main__ - INFO - Processed 400 attack-pattern entities
+2025-11-08 12:42:13 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4105-4204)
+2025-11-08 12:42:13 - __main__ - INFO - Processed 500 attack-pattern entities
+2025-11-08 12:42:16 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4205-4304)
+2025-11-08 12:42:16 - __main__ - INFO - Processed 600 attack-pattern entities
+2025-11-08 12:42:18 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4305-4404)
+2025-11-08 12:42:18 - __main__ - INFO - Processed 700 attack-pattern entities
+2025-11-08 12:42:20 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4405-4504)
+2025-11-08 12:42:20 - __main__ - INFO - Processed 800 attack-pattern entities
+2025-11-08 12:42:23 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4505-4604)
+2025-11-08 12:42:23 - __main__ - INFO - Processed 900 attack-pattern entities
+2025-11-08 12:42:24 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4605-4704)
+2025-11-08 12:42:24 - __main__ - INFO - Processed 1000 attack-pattern entities
+2025-11-08 12:42:26 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4705-4804)
+2025-11-08 12:42:26 - __main__ - INFO - Processed 1100 attack-pattern entities
+2025-11-08 12:42:27 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4805-4904)
+2025-11-08 12:42:27 - __main__ - INFO - Processed 1200 attack-pattern entities
+2025-11-08 12:42:29 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 4905-5004)
+2025-11-08 12:42:29 - __main__ - INFO - Processed 1300 attack-pattern entities
+2025-11-08 12:42:30 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5005-5104)
+2025-11-08 12:42:30 - __main__ - INFO - Processed 1400 attack-pattern entities
+2025-11-08 12:42:30 - knowledge_ingest.opencti_client - INFO - Completed fetching 1494 attack-pattern entities
+2025-11-08 12:42:31 - knowledge_ingest.storage_pg - INFO - Added 94 entities (vector IDs: 5105-5198)
+2025-11-08 12:42:31 - __main__ - INFO - Completed sync for attack-pattern: 1494 entities
+2025-11-08 12:42:31 - knowledge_ingest.storage_pg - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 12:42:31 - __main__ - INFO - ============================================================
+2025-11-08 12:42:31 - __main__ - INFO - Sync Complete
+2025-11-08 12:42:31 - __main__ - INFO - Total entities synced: 1494
+2025-11-08 12:42:31 - __main__ - INFO - Storage: <knowledge_ingest.storage_pg.KnowledgeStoragePostgres object at 0x7ac6748c7700>
+2025-11-08 12:42:31 - __main__ - INFO - ============================================================
+2025-11-08 22:29:14 - __main__ - INFO - ============================================================
+2025-11-08 22:29:14 - __main__ - INFO - OpenCTI Knowledge Sync Starting
+2025-11-08 22:29:14 - __main__ - INFO - ============================================================
+2025-11-08 22:29:14 - knowledge_ingest.opencti_client - INFO - Initialized OpenCTI client for http://100.114.206.116:8080
+2025-11-08 22:29:14 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-08 15:29:19 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-08 15:29:22 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-08 15:29:22 - __main__ - INFO - Using PostgreSQL storage backend
+2025-11-08 15:29:22 - knowledge_ingest.storage_pg - INFO - Initializing storage (FAISS: ./data/faiss_index/knowledge.index, PostgreSQL: localhost/wazuh_rag, dim: 384)
+2025-11-08 15:29:22 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-08 15:29:22 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-08 15:29:22 - knowledge_ingest.storage_pg - INFO - Loaded existing FAISS index with 5199 vectors
+2025-11-08 15:29:22 - knowledge_ingest.storage_pg - INFO - Connected to PostgreSQL metadata database
+2025-11-08 15:29:22 - knowledge_ingest.storage_pg - INFO - Knowledge table verified
+2025-11-08 15:29:22 - __main__ - INFO - Starting sync for entity type: attack-pattern
+2025-11-08 15:29:22 - knowledge_ingest.opencti_client - INFO - Fetching attack-pattern entities (max: 10000)
+2025-11-08 15:29:25 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5199-5298)
+2025-11-08 15:29:25 - __main__ - INFO - Processed 100 attack-pattern entities
+2025-11-08 15:29:27 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5299-5398)
+2025-11-08 15:29:27 - __main__ - INFO - Processed 200 attack-pattern entities
+2025-11-08 15:29:29 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5399-5498)
+2025-11-08 15:29:29 - __main__ - INFO - Processed 300 attack-pattern entities
+2025-11-08 15:29:31 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5499-5598)
+2025-11-08 15:29:31 - __main__ - INFO - Processed 400 attack-pattern entities
+2025-11-08 15:29:33 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5599-5698)
+2025-11-08 15:29:33 - __main__ - INFO - Processed 500 attack-pattern entities
+2025-11-08 15:29:35 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5699-5798)
+2025-11-08 15:29:35 - __main__ - INFO - Processed 600 attack-pattern entities
+2025-11-08 15:29:37 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5799-5898)
+2025-11-08 15:29:37 - __main__ - INFO - Processed 700 attack-pattern entities
+2025-11-08 15:29:39 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5899-5998)
+2025-11-08 15:29:39 - __main__ - INFO - Processed 800 attack-pattern entities
+2025-11-08 15:29:40 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 5999-6098)
+2025-11-08 15:29:40 - __main__ - INFO - Processed 900 attack-pattern entities
+2025-11-08 15:29:42 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 6099-6198)
+2025-11-08 15:29:42 - __main__ - INFO - Processed 1000 attack-pattern entities
+2025-11-08 15:29:43 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 6199-6298)
+2025-11-08 15:29:43 - __main__ - INFO - Processed 1100 attack-pattern entities
+2025-11-08 15:29:44 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 6299-6398)
+2025-11-08 15:29:44 - __main__ - INFO - Processed 1200 attack-pattern entities
+2025-11-08 15:29:46 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 6399-6498)
+2025-11-08 15:29:46 - __main__ - INFO - Processed 1300 attack-pattern entities
+2025-11-08 15:29:47 - knowledge_ingest.storage_pg - INFO - Added 100 entities (vector IDs: 6499-6598)
+2025-11-08 15:29:47 - __main__ - INFO - Processed 1400 attack-pattern entities
+2025-11-08 15:29:47 - knowledge_ingest.opencti_client - INFO - Completed fetching 1494 attack-pattern entities
+2025-11-08 15:29:48 - knowledge_ingest.storage_pg - INFO - Added 94 entities (vector IDs: 6599-6692)
+2025-11-08 15:29:48 - __main__ - INFO - Completed sync for attack-pattern: 1494 entities
+2025-11-08 15:29:48 - knowledge_ingest.storage_pg - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-08 15:29:48 - __main__ - INFO - ============================================================
+2025-11-08 15:29:48 - __main__ - INFO - Sync Complete
+2025-11-08 15:29:48 - __main__ - INFO - Total entities synced: 1494
+2025-11-08 15:29:48 - __main__ - INFO - Storage: <knowledge_ingest.storage_pg.KnowledgeStoragePostgres object at 0x79a75fac3700>
+2025-11-08 15:29:48 - __main__ - INFO - ============================================================

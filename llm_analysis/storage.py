@@ -1,7 +1,7 @@
 """
 Storage Module for LLM Analysis Reports
 
-Handles database operations for the reports table in rag.db
+Handles database operations for the reports table (SQLite or PostgreSQL)
 """
 
 import sqlite3
@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from pathlib import Path
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -19,25 +20,91 @@ class ReportStorage:
     Manages storage of LLM-generated threat analysis reports
     """
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str = None):
         """
         Initialize report storage
 
+        Auto-detects PostgreSQL if DB_HOST env var is set, otherwise uses SQLite.
+
         Args:
-            db_path: Path to SQLite database (rag.db)
+            db_path: Path to SQLite database (only used if not using PostgreSQL)
         """
-        self.db_path = Path(db_path)
         self.conn = None
+        self.use_postgres = bool(os.getenv('DB_HOST'))
 
-        # Ensure database exists
-        if not self.db_path.exists():
-            logger.warning(f"Database not found at {db_path}, will create it")
+        if self.use_postgres:
+            # Use PostgreSQL
+            import psycopg2
+            import psycopg2.extras
 
-        self._init_database()
+            self.conn = psycopg2.connect(
+                host=os.getenv('DB_HOST', 'localhost'),
+                port=os.getenv('DB_PORT', '5432'),
+                database=os.getenv('DB_NAME', 'wazuh_rag'),
+                user=os.getenv('DB_USER', 'wazuh_user'),
+                password=os.getenv('DB_PASSWORD', '')
+            )
+            self.conn.autocommit = False
+            logger.info(f"Connected to PostgreSQL database for reports: {os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}")
+        else:
+            # Use SQLite
+            if db_path is None:
+                db_path = "./rag.db"
 
-    def _init_database(self):
-        """Create reports table if it doesn't exist"""
+            self.db_path = Path(db_path)
+
+            if not self.db_path.exists():
+                logger.warning(f"Database not found at {db_path}, will create it")
+
+            self._init_sqlite()
+
+    def _init_sqlite(self):
+        """Initialize SQLite database"""
         self.conn = sqlite3.connect(str(self.db_path))
+        self.conn.row_factory = sqlite3.Row
+
+        # Create reports table
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS reports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                window_start TEXT NOT NULL,
+                window_end TEXT NOT NULL,
+                hosts TEXT,
+                agents TEXT,
+                alerts_count INTEGER NOT NULL,
+                mitre_list TEXT,
+                summary TEXT,
+                severity TEXT,
+                risk_score INTEGER,
+                details JSON,
+                iocs JSON,
+                suggested_actions JSON,
+                faiss_context TEXT
+            )
+        """)
+
+        # Add severity column to existing tables (Phase 4 enhancement)
+        try:
+            self.conn.execute("ALTER TABLE reports ADD COLUMN severity TEXT")
+            logger.info("Added severity column to reports table")
+        except sqlite3.OperationalError:
+            # Column already exists
+            pass
+
+        # Create index for faster queries
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_reports_created
+            ON reports(created_at DESC)
+        """)
+
+        self.conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_reports_window
+            ON reports(window_start, window_end)
+        """)
+
+        self.conn.commit()
+        logger.info("Reports table initialized (SQLite)")
         self.conn.row_factory = sqlite3.Row
 
         # Create reports table
@@ -160,7 +227,14 @@ class ReportStorage:
             suggested_actions = "[]"
 
         try:
-            details = json.dumps(llm_output, ensure_ascii=False)  # Store full LLM response
+            # Custom JSON encoder to handle datetime objects
+            def json_serial(obj):
+                """JSON serializer for objects not serializable by default json code"""
+                if isinstance(obj, datetime):
+                    return obj.isoformat()
+                raise TypeError(f"Type {type(obj)} not serializable")
+
+            details = json.dumps(llm_output, ensure_ascii=False, default=json_serial)  # Store full LLM response
         except Exception as e:
             logger.error(f"Error serializing details (full LLM output): {e}")
             details = "{}"
@@ -210,17 +284,66 @@ class ReportStorage:
         logger.debug(f"Parameter types: {[type(p).__name__ for p in params]}")
         logger.debug(f"Severity: {severity}, Risk Score: {risk_score}")
 
-        # Insert report (Phase 4 schema with severity)
-        cursor = self.conn.execute("""
-            INSERT INTO reports (
-                window_start, window_end, hosts, agents, alerts_count,
-                mitre_list, summary, severity, risk_score, details, iocs,
-                suggested_actions, faiss_context
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, params)
+        # Insert report (different syntax for SQLite vs PostgreSQL)
+        if self.use_postgres:
+            import psycopg2.extras
+            import psycopg2.extensions
 
-        self.conn.commit()
-        report_id = cursor.lastrowid
+            # Register adapter for dicts only (NOT lists, as they conflict with PostgreSQL arrays)
+            psycopg2.extensions.register_adapter(dict, psycopg2.extras.Json)
+
+            # For PostgreSQL: use actual Python lists for array columns
+            hosts_array = hosts if hosts else []
+            agents_array = agents if agents else []
+
+            # Helper to parse JSON strings and wrap in psycopg2.extras.Json for JSONB columns
+            def to_jsonb(val):
+                if isinstance(val, str):
+                    try:
+                        parsed = json.loads(val)
+                        return psycopg2.extras.Json(parsed)
+                    except:
+                        return psycopg2.extras.Json(val)
+                return psycopg2.extras.Json(val)
+
+            # PostgreSQL uses %s placeholders and RETURNING for ID
+            with self.conn.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO reports (
+                        window_start, window_end, hosts, agents, alerts_count,
+                        mitre_list, summary, risk_score, details, iocs,
+                        suggested_actions, faiss_context
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
+                """, (
+                    window_start,
+                    window_end,
+                    hosts_array,
+                    agents_array,
+                    alerts_count,
+                    to_jsonb(mitre_list),
+                    summary,
+                    risk_score,
+                    to_jsonb(details),
+                    to_jsonb(iocs),
+                    to_jsonb(suggested_actions),
+                    to_jsonb(faiss_context_str)
+                ))
+                report_id = cursor.fetchone()[0]
+
+            self.conn.commit()
+        else:
+            # SQLite uses ? placeholders
+            cursor = self.conn.execute("""
+                INSERT INTO reports (
+                    window_start, window_end, hosts, agents, alerts_count,
+                    mitre_list, summary, severity, risk_score, details, iocs,
+                    suggested_actions, faiss_context
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, params)
+
+            self.conn.commit()
+            report_id = cursor.lastrowid
 
         logger.info(
             f"Saved report {report_id} for window {window_start_str} to {window_end_str} "

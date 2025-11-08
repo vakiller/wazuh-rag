@@ -48,15 +48,23 @@ class LLMClient:
     def _init_llm(self):
         """Initialize LangChain Ollama client"""
         try:
-            from langchain_community.llms import Ollama
+            from langchain_ollama import OllamaLLM
         except ImportError:
-            raise ImportError(
-                "langchain-community not installed. "
-                "Install with: pip install langchain-community"
-            )
+            # Fallback to old import for backward compatibility
+            try:
+                from langchain_community.llms import Ollama as OllamaLLM
+                logger.warning(
+                    "Using deprecated langchain-community. "
+                    "Consider upgrading: pip install -U langchain-ollama"
+                )
+            except ImportError:
+                raise ImportError(
+                    "langchain-ollama not installed. "
+                    "Install with: pip install langchain-ollama"
+                )
 
         try:
-            self.llm = Ollama(
+            self.llm = OllamaLLM(
                 base_url=self.base_url,
                 model=self.model,
                 temperature=self.temperature,

@@ -1,7 +1,7 @@
 """
 Retrieval Module
 
-Queries alerts from database and retrieves relevant knowledge from FAISS
+Queries alerts from database (SQLite or PostgreSQL) and retrieves relevant knowledge from FAISS
 """
 
 import logging
@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any, Set, Optional
 from pathlib import Path
 import sys
+import os
 
 # Add parent directory to path to import Phase 2 modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -20,26 +21,47 @@ logger = logging.getLogger(__name__)
 
 class AlertRetriever:
     """
-    Retrieves alerts from rag.db within a time window
+    Retrieves alerts from database (SQLite or PostgreSQL) within a time window
     """
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str = None):
         """
         Initialize alert retriever
 
+        Auto-detects PostgreSQL if DB_HOST env var is set, otherwise uses SQLite.
+
         Args:
-            db_path: Path to rag.db
+            db_path: Path to SQLite database (only used if not using PostgreSQL)
         """
-        self.db_path = Path(db_path)
         self.conn = None
+        self.use_postgres = bool(os.getenv('DB_HOST'))
 
-        if not self.db_path.exists():
-            raise FileNotFoundError(f"Database not found: {db_path}")
+        if self.use_postgres:
+            # Use PostgreSQL
+            import psycopg2
+            import psycopg2.extras
 
-        self.conn = sqlite3.connect(str(self.db_path))
-        self.conn.row_factory = sqlite3.Row
+            self.conn = psycopg2.connect(
+                host=os.getenv('DB_HOST', 'localhost'),
+                port=os.getenv('DB_PORT', '5432'),
+                database=os.getenv('DB_NAME', 'wazuh_rag'),
+                user=os.getenv('DB_USER', 'wazuh_user'),
+                password=os.getenv('DB_PASSWORD', '')
+            )
+            logger.info(f"Connected to PostgreSQL database: {os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}")
+        else:
+            # Use SQLite
+            if db_path is None:
+                db_path = "./wazuh_alerts.db"
 
-        logger.info(f"Connected to database: {db_path}")
+            self.db_path = Path(db_path)
+
+            if not self.db_path.exists():
+                raise FileNotFoundError(f"Database not found: {db_path}")
+
+            self.conn = sqlite3.connect(str(self.db_path))
+            self.conn.row_factory = sqlite3.Row
+            logger.info(f"Connected to SQLite database: {db_path}")
 
     def get_alerts_in_window(
         self,
@@ -66,15 +88,30 @@ class AlertRetriever:
             f"to {end_time.isoformat()}"
         )
 
-        # Query alerts table
-        cursor = self.conn.execute("""
-            SELECT *
-            FROM alerts
-            WHERE timestamp >= ? AND timestamp <= ?
-            ORDER BY timestamp ASC
-        """, (start_time.isoformat(), end_time.isoformat()))
+        # Query alerts table (different syntax for SQLite vs PostgreSQL)
+        if self.use_postgres:
+            import psycopg2.extras
 
-        alerts = [dict(row) for row in cursor.fetchall()]
+            with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute("""
+                    SELECT *
+                    FROM alerts
+                    WHERE timestamp >= %s AND timestamp <= %s
+                    ORDER BY timestamp ASC
+                """, (start_time, end_time))
+
+                alerts = cursor.fetchall()
+                # Convert to regular dicts and handle PostgreSQL arrays
+                alerts = [dict(row) for row in alerts]
+        else:
+            cursor = self.conn.execute("""
+                SELECT *
+                FROM alerts
+                WHERE timestamp >= ? AND timestamp <= ?
+                ORDER BY timestamp ASC
+            """, (start_time.isoformat(), end_time.isoformat()))
+
+            alerts = [dict(row) for row in cursor.fetchall()]
 
         logger.info(f"Retrieved {len(alerts)} alerts from database")
 
@@ -97,12 +134,18 @@ class AlertRetriever:
 
             if mitre_field and mitre_field != '[]':
                 try:
-                    mitre_list = json.loads(mitre_field) if isinstance(
-                        mitre_field, str) else mitre_field
+                    # PostgreSQL returns arrays as lists, SQLite returns JSON strings
+                    if isinstance(mitre_field, list):
+                        mitre_list = mitre_field
+                    elif isinstance(mitre_field, str):
+                        mitre_list = json.loads(mitre_field)
+                    else:
+                        mitre_list = []
+
                     techniques.update(mitre_list)
-                except (json.JSONDecodeError, TypeError):
+                except (json.JSONDecodeError, TypeError) as e:
                     logger.warning(
-                        f"Failed to parse MITRE techniques from alert {alert.get('alert_id')}")
+                        f"Failed to parse MITRE techniques from alert {alert.get('id')}: {e}")
 
         logger.info(
             f"Extracted {len(techniques)} unique MITRE techniques: {techniques}")
