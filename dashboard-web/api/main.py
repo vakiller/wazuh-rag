@@ -6,11 +6,13 @@ FastAPI backend for RAG Wazuh Dashboard
 
 import os
 import json
+import requests
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from contextlib import contextmanager
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import psycopg2
 import psycopg2.extras
 from psycopg2 import pool
@@ -236,6 +238,176 @@ async def get_report_by_id(report_id: int):
             return result
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Pydantic models
+class TelegramConfig(BaseModel):
+    bot_token: str
+    chat_id: str
+    enabled: bool
+    min_severity: str = "medium"
+
+class SystemStatus(BaseModel):
+    wazuh: Dict[str, Any]
+    opencti: Dict[str, Any]
+    llm: Dict[str, Any]
+
+# Config endpoints
+@app.get("/api/config/status")
+async def get_system_status():
+    """Get connection status of all services"""
+    status = {
+        "wazuh": {"status": "unknown", "message": ""},
+        "opencti": {"status": "unknown", "message": ""},
+        "llm": {"status": "unknown", "message": ""}
+    }
+
+    # Check Wazuh
+    try:
+        wazuh_host = os.getenv('WAZUH_INDEXER_HOST')
+        wazuh_port = os.getenv('WAZUH_INDEXER_PORT', '9200')
+        if wazuh_host:
+            status["wazuh"] = {
+                "status": "connected",
+                "host": f"{wazuh_host}:{wazuh_port}",
+                "message": "Connection configured"
+            }
+        else:
+            status["wazuh"] = {"status": "disconnected", "message": "Not configured"}
+    except Exception as e:
+        status["wazuh"] = {"status": "error", "message": str(e)}
+
+    # Check OpenCTI
+    try:
+        opencti_url = os.getenv('OPENCTI_URL')
+        if opencti_url:
+            status["opencti"] = {
+                "status": "connected",
+                "url": opencti_url,
+                "message": "Connection configured"
+            }
+        else:
+            status["opencti"] = {"status": "disconnected", "message": "Not configured"}
+    except Exception as e:
+        status["opencti"] = {"status": "error", "message": str(e)}
+
+    # Check LLM
+    try:
+        llm_url = os.getenv('LLM_BASE_URL')
+        llm_model = os.getenv('LLM_MODEL')
+        if llm_url:
+            status["llm"] = {
+                "status": "connected",
+                "url": llm_url,
+                "model": llm_model,
+                "message": "Connection configured"
+            }
+        else:
+            status["llm"] = {"status": "disconnected", "message": "Not configured"}
+    except Exception as e:
+        status["llm"] = {"status": "error", "message": str(e)}
+
+    return status
+
+@app.get("/api/config/telegram")
+async def get_telegram_config():
+    """Get Telegram notification configuration"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS telegram_config (
+                        id SERIAL PRIMARY KEY,
+                        bot_token TEXT,
+                        chat_id TEXT,
+                        enabled BOOLEAN DEFAULT false,
+                        min_severity TEXT DEFAULT 'medium',
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                conn.commit()
+
+                cursor.execute("SELECT * FROM telegram_config ORDER BY id DESC LIMIT 1")
+                config = cursor.fetchone()
+
+                if config:
+                    return {
+                        "bot_token": config['bot_token'] or "",
+                        "chat_id": config['chat_id'] or "",
+                        "enabled": config['enabled'],
+                        "min_severity": config['min_severity']
+                    }
+                else:
+                    return {
+                        "bot_token": "",
+                        "chat_id": "",
+                        "enabled": False,
+                        "min_severity": "medium"
+                    }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/config/telegram")
+async def save_telegram_config(config: TelegramConfig):
+    """Save Telegram notification configuration"""
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS telegram_config (
+                        id SERIAL PRIMARY KEY,
+                        bot_token TEXT,
+                        chat_id TEXT,
+                        enabled BOOLEAN DEFAULT false,
+                        min_severity TEXT DEFAULT 'medium',
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+
+                cursor.execute("""
+                    INSERT INTO telegram_config (bot_token, chat_id, enabled, min_severity, updated_at)
+                    VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+                """, (config.bot_token, config.chat_id, config.enabled, config.min_severity))
+                conn.commit()
+
+        return {"success": True, "message": "Configuration saved successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/config/telegram/test")
+async def test_telegram_config(config: TelegramConfig):
+    """Test Telegram notification"""
+    try:
+        if not config.bot_token or not config.chat_id:
+            raise HTTPException(status_code=400, detail="Bot token and chat ID are required")
+
+        # Send test message
+        url = f"https://api.telegram.org/bot{config.bot_token}/sendMessage"
+        message = (
+            "🔔 *RAG Wazuh Alert Test*\n\n"
+            "This is a test notification from your RAG Wazuh Dashboard.\n\n"
+            "✅ Configuration is working correctly!\n"
+            f"📊 Minimum Severity: *{config.min_severity.upper()}*\n"
+            f"🔗 Dashboard: {os.getenv('DASHBOARD_URL', 'http://localhost:3000')}"
+        )
+
+        response = requests.post(url, json={
+            "chat_id": config.chat_id,
+            "text": message,
+            "parse_mode": "Markdown"
+        }, timeout=10)
+
+        if response.status_code == 200:
+            return {"success": True, "message": "Test message sent successfully"}
+        else:
+            error_data = response.json()
+            raise HTTPException(
+                status_code=400,
+                detail=f"Telegram API error: {error_data.get('description', 'Unknown error')}"
+            )
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Connection error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

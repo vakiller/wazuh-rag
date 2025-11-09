@@ -351,6 +351,20 @@ class ReportStorage:
             f"({alerts_count} alerts, severity: {severity}, risk score: {risk_score})"
         )
 
+        # Send Telegram notification
+        try:
+            from telegram_notify import send_telegram_notification
+            send_telegram_notification(
+                report_id=report_id,
+                severity=severity,
+                risk_score=risk_score,
+                summary=summary,
+                alerts_count=alerts_count,
+                hosts_count=len(hosts) if hosts else 0
+            )
+        except Exception as e:
+            logger.warning(f"Failed to send Telegram notification: {e}")
+
         return report_id
 
     def _extract_fields_from_llm_output(self, llm_output: Dict[str, Any]) -> Dict[str, Any]:
