@@ -311,9 +311,9 @@ class ReportStorage:
                 cursor.execute("""
                     INSERT INTO reports (
                         window_start, window_end, hosts, agents, alerts_count,
-                        mitre_list, summary, risk_score, details, iocs,
+                        mitre_list, summary, severity, risk_score, details, iocs,
                         suggested_actions, faiss_context
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
                     window_start,
@@ -323,6 +323,7 @@ class ReportStorage:
                     alerts_count,
                     to_jsonb(mitre_list),
                     summary,
+                    severity,
                     risk_score,
                     to_jsonb(details),
                     to_jsonb(iocs),
