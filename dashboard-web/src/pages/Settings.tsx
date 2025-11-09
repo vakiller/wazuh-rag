@@ -28,6 +28,7 @@ interface SystemStatus {
   wazuh: ServiceStatus;
   opencti: ServiceStatus;
   llm: ServiceStatus;
+  postgresql: ServiceStatus;
 }
 
 interface TelegramConfig {
@@ -170,7 +171,7 @@ export default function Settings() {
           </h2>
         </div>
 
-        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Wazuh Status */}
           {systemStatus?.wazuh && (
             <div className={`border rounded-lg p-6 ${getStatusColor(systemStatus.wazuh.status)}`}>
@@ -184,13 +185,28 @@ export default function Settings() {
                 </div>
                 {getStatusIcon(systemStatus.wazuh.status)}
               </div>
-              <div className="space-y-2">
-                {systemStatus.wazuh.host && (
+              <div className="space-y-1.5">
+                {(systemStatus.wazuh as any).host && (
                   <p className="text-sm text-gray-300">
-                    <span className="text-gray-500">Host:</span> {systemStatus.wazuh.host}
+                    <span className="text-gray-500">Host:</span> {(systemStatus.wazuh as any).host}
                   </p>
                 )}
-                <p className="text-sm text-gray-400">{systemStatus.wazuh.message}</p>
+                {(systemStatus.wazuh as any).user && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">User:</span> {(systemStatus.wazuh as any).user}
+                  </p>
+                )}
+                {(systemStatus.wazuh as any).cluster_name && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Cluster:</span> {(systemStatus.wazuh as any).cluster_name}
+                  </p>
+                )}
+                {(systemStatus.wazuh as any).version && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Version:</span> {(systemStatus.wazuh as any).version}
+                  </p>
+                )}
+                <p className="text-sm text-gray-400 pt-1">{systemStatus.wazuh.message}</p>
               </div>
             </div>
           )}
@@ -208,13 +224,19 @@ export default function Settings() {
                 </div>
                 {getStatusIcon(systemStatus.opencti.status)}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {systemStatus.opencti.url && (
-                  <p className="text-sm text-gray-300 truncate">
+                  <p className="text-sm text-gray-300 break-all">
                     <span className="text-gray-500">URL:</span> {systemStatus.opencti.url}
                   </p>
                 )}
-                <p className="text-sm text-gray-400">{systemStatus.opencti.message}</p>
+                {(systemStatus.opencti as any).has_token !== undefined && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Token:</span>{' '}
+                    {(systemStatus.opencti as any).has_token ? '✓ Configured' : '✗ Missing'}
+                  </p>
+                )}
+                <p className="text-sm text-gray-400 pt-1">{systemStatus.opencti.message}</p>
               </div>
             </div>
           )}
@@ -232,9 +254,9 @@ export default function Settings() {
                 </div>
                 {getStatusIcon(systemStatus.llm.status)}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {systemStatus.llm.url && (
-                  <p className="text-sm text-gray-300 truncate">
+                  <p className="text-sm text-gray-300 break-all">
                     <span className="text-gray-500">URL:</span> {systemStatus.llm.url}
                   </p>
                 )}
@@ -243,7 +265,57 @@ export default function Settings() {
                     <span className="text-gray-500">Model:</span> {systemStatus.llm.model}
                   </p>
                 )}
-                <p className="text-sm text-gray-400">{systemStatus.llm.message}</p>
+                {(systemStatus.llm as any).model_available !== undefined && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Available:</span>{' '}
+                    {(systemStatus.llm as any).model_available ? '✓ Yes' : '✗ No'}
+                  </p>
+                )}
+                {(systemStatus.llm as any).available_models_count !== undefined && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Models:</span> {(systemStatus.llm as any).available_models_count}
+                  </p>
+                )}
+                <p className="text-sm text-gray-400 pt-1">{systemStatus.llm.message}</p>
+              </div>
+            </div>
+          )}
+
+          {/* PostgreSQL Status */}
+          {systemStatus?.postgresql && (
+            <div className={`border rounded-lg p-6 ${getStatusColor(systemStatus.postgresql.status)}`}>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <Database className="w-8 h-8 text-green-500" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">PostgreSQL</h3>
+                    <p className="text-sm text-gray-400">Database Storage</p>
+                  </div>
+                </div>
+                {getStatusIcon(systemStatus.postgresql.status)}
+              </div>
+              <div className="space-y-1.5">
+                {(systemStatus.postgresql as any).host && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Host:</span> {(systemStatus.postgresql as any).host}
+                  </p>
+                )}
+                {(systemStatus.postgresql as any).database && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Database:</span> {(systemStatus.postgresql as any).database}
+                  </p>
+                )}
+                {(systemStatus.postgresql as any).version && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Version:</span> {(systemStatus.postgresql as any).version}
+                  </p>
+                )}
+                {(systemStatus.postgresql as any).size_mb !== undefined && (
+                  <p className="text-sm text-gray-300">
+                    <span className="text-gray-500">Size:</span> {(systemStatus.postgresql as any).size_mb} MB
+                  </p>
+                )}
+                <p className="text-sm text-gray-400 pt-1">{systemStatus.postgresql.message}</p>
               </div>
             </div>
           )}

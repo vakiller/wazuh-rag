@@ -42,7 +42,7 @@ export default function ReportDetail() {
           <Brain className="w-16 h-16 text-info animate-pulse mx-auto mb-6" />
           <div className="space-y-2">
             <p className="text-xl font-semibold text-white">Analyzing Threat Intelligence</p>
-            <p className="text-sm text-gray-400">Reconstructing attack timeline with AI...</p>
+            <p className="text-sm text-gray-400">Reconstructing attack timeline with llm...</p>
           </div>
         </div>
       </div>

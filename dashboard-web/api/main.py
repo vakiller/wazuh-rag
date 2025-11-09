@@ -260,53 +260,180 @@ async def get_system_status():
     status = {
         "wazuh": {"status": "unknown", "message": ""},
         "opencti": {"status": "unknown", "message": ""},
-        "llm": {"status": "unknown", "message": ""}
+        "llm": {"status": "unknown", "message": ""},
+        "postgresql": {"status": "unknown", "message": ""}
     }
 
-    # Check Wazuh
+    # Check Wazuh Indexer
     try:
         wazuh_host = os.getenv('WAZUH_INDEXER_HOST')
         wazuh_port = os.getenv('WAZUH_INDEXER_PORT', '9200')
-        if wazuh_host:
-            status["wazuh"] = {
-                "status": "connected",
-                "host": f"{wazuh_host}:{wazuh_port}",
-                "message": "Connection configured"
-            }
+        wazuh_user = os.getenv('WAZUH_INDEXER_USER', 'admin')
+
+        if not wazuh_host:
+            status["wazuh"] = {"status": "disconnected", "message": "Not configured in environment"}
         else:
-            status["wazuh"] = {"status": "disconnected", "message": "Not configured"}
+            # Try to connect to Wazuh Indexer
+            wazuh_url = f"https://{wazuh_host}:{wazuh_port}"
+            verify_ssl = os.getenv('WAZUH_INDEXER_VERIFY_CERTS', 'false').lower() == 'true'
+
+            response = requests.get(
+                wazuh_url,
+                auth=(wazuh_user, os.getenv('WAZUH_INDEXER_PASSWORD', '')),
+                verify=verify_ssl,
+                timeout=5
+            )
+
+            if response.status_code == 200:
+                cluster_info = response.json()
+                status["wazuh"] = {
+                    "status": "connected",
+                    "host": f"{wazuh_host}:{wazuh_port}",
+                    "user": wazuh_user,
+                    "cluster_name": cluster_info.get('cluster_name', 'Unknown'),
+                    "version": cluster_info.get('version', {}).get('number', 'Unknown'),
+                    "message": "Connected successfully"
+                }
+            else:
+                status["wazuh"] = {
+                    "status": "error",
+                    "host": f"{wazuh_host}:{wazuh_port}",
+                    "message": f"HTTP {response.status_code}"
+                }
+    except requests.exceptions.RequestException as e:
+        status["wazuh"] = {
+            "status": "error",
+            "host": f"{wazuh_host}:{wazuh_port}" if wazuh_host else "Not configured",
+            "message": f"Connection failed: {str(e)[:100]}"
+        }
     except Exception as e:
-        status["wazuh"] = {"status": "error", "message": str(e)}
+        status["wazuh"] = {"status": "error", "message": str(e)[:100]}
 
     # Check OpenCTI
     try:
         opencti_url = os.getenv('OPENCTI_URL')
-        if opencti_url:
-            status["opencti"] = {
-                "status": "connected",
-                "url": opencti_url,
-                "message": "Connection configured"
-            }
-        else:
-            status["opencti"] = {"status": "disconnected", "message": "Not configured"}
-    except Exception as e:
-        status["opencti"] = {"status": "error", "message": str(e)}
+        opencti_token = os.getenv('OPENCTI_TOKEN')
 
-    # Check LLM
+        if not opencti_url:
+            status["opencti"] = {"status": "disconnected", "message": "Not configured in environment"}
+        else:
+            # Try to connect to OpenCTI
+            headers = {"Authorization": f"Bearer {opencti_token}"} if opencti_token else {}
+            verify_ssl = os.getenv('OPENCTI_VERIFY_SSL', 'true').lower() == 'true'
+
+            response = requests.get(
+                f"{opencti_url}/graphql",
+                headers=headers,
+                verify=verify_ssl,
+                timeout=5
+            )
+
+            if response.status_code in [200, 400, 405]:  # 400/405 means API is reachable
+                status["opencti"] = {
+                    "status": "connected",
+                    "url": opencti_url,
+                    "has_token": bool(opencti_token),
+                    "message": "Connected successfully"
+                }
+            else:
+                status["opencti"] = {
+                    "status": "error",
+                    "url": opencti_url,
+                    "message": f"HTTP {response.status_code}"
+                }
+    except requests.exceptions.RequestException as e:
+        status["opencti"] = {
+            "status": "error",
+            "url": opencti_url if opencti_url else "Not configured",
+            "message": f"Connection failed: {str(e)[:100]}"
+        }
+    except Exception as e:
+        status["opencti"] = {"status": "error", "message": str(e)[:100]}
+
+    # Check LLM Service (Ollama)
     try:
         llm_url = os.getenv('LLM_BASE_URL')
         llm_model = os.getenv('LLM_MODEL')
-        if llm_url:
-            status["llm"] = {
-                "status": "connected",
-                "url": llm_url,
-                "model": llm_model,
-                "message": "Connection configured"
-            }
+
+        if not llm_url:
+            status["llm"] = {"status": "disconnected", "message": "Not configured in environment"}
         else:
-            status["llm"] = {"status": "disconnected", "message": "Not configured"}
+            # Try to connect to Ollama API
+            response = requests.get(
+                f"{llm_url}/api/tags",
+                timeout=5
+            )
+
+            if response.status_code == 200:
+                models_data = response.json()
+                available_models = [m.get('name') for m in models_data.get('models', [])]
+                model_exists = llm_model in available_models
+
+                status["llm"] = {
+                    "status": "connected",
+                    "url": llm_url,
+                    "model": llm_model,
+                    "model_available": model_exists,
+                    "available_models_count": len(available_models),
+                    "message": "Connected successfully" if model_exists else f"Warning: Model '{llm_model}' not found"
+                }
+            else:
+                status["llm"] = {
+                    "status": "error",
+                    "url": llm_url,
+                    "model": llm_model,
+                    "message": f"HTTP {response.status_code}"
+                }
+    except requests.exceptions.RequestException as e:
+        status["llm"] = {
+            "status": "error",
+            "url": llm_url if llm_url else "Not configured",
+            "model": llm_model if llm_model else "Not configured",
+            "message": f"Connection failed: {str(e)[:100]}"
+        }
     except Exception as e:
-        status["llm"] = {"status": "error", "message": str(e)}
+        status["llm"] = {"status": "error", "message": str(e)[:100]}
+
+    # Check PostgreSQL
+    try:
+        db_host = os.getenv('DB_HOST', 'localhost')
+        db_port = os.getenv('DB_PORT', '5432')
+        db_name = os.getenv('DB_NAME', 'wazuh_rag')
+        db_user = os.getenv('DB_USER', 'wazuh_user')
+
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                # Get PostgreSQL version
+                cursor.execute("SELECT version()")
+                version = cursor.fetchone()[0]
+                version_short = version.split(',')[0].replace('PostgreSQL ', '')
+
+                # Get database size
+                cursor.execute(f"SELECT pg_database_size('{db_name}')")
+                db_size_bytes = cursor.fetchone()[0]
+                db_size_mb = round(db_size_bytes / 1024 / 1024, 2)
+
+                # Count reports
+                cursor.execute("SELECT COUNT(*) FROM reports")
+                reports_count = cursor.fetchone()[0]
+
+        status["postgresql"] = {
+            "status": "connected",
+            "host": f"{db_host}:{db_port}",
+            "database": db_name,
+            "user": db_user,
+            "version": version_short,
+            "size_mb": db_size_mb,
+            "reports_count": reports_count,
+            "message": "Connected successfully"
+        }
+    except Exception as e:
+        status["postgresql"] = {
+            "status": "error",
+            "host": f"{db_host}:{db_port}" if db_host else "Not configured",
+            "database": db_name if db_name else "Not configured",
+            "message": f"Connection failed: {str(e)[:100]}"
+        }
 
     return status
 
