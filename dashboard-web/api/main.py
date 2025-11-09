@@ -191,7 +191,7 @@ async def get_timeseries_data(days: int = Query(7, ge=1, le=30)):
 
 @app.get("/api/reports")
 async def get_reports(
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=10000),
     offset: int = Query(0, ge=0),
     severity: Optional[str] = None,
     min_risk_score: Optional[int] = Query(None, ge=0, le=100)

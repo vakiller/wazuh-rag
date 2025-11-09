@@ -8,6 +8,10 @@ import {
   ArrowRight,
   RefreshCw,
   Filter,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
 } from 'lucide-react';
 import { reportsApi } from '@/lib/api';
 import type { ThreatReport, DashboardStats } from '@/types';
@@ -17,10 +21,14 @@ import RiskTrendChart from '@/components/RiskTrendChart';
 import SeverityDistribution from '@/components/SeverityDistribution';
 
 export default function Dashboard() {
-  const [reports, setReports] = useState<ThreatReport[]>([]);
+  const [allReports, setAllReports] = useState<ThreatReport[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     loadData();
@@ -30,10 +38,10 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const [reportsData, statsData] = await Promise.all([
-        reportsApi.getRecent(20),
+        reportsApi.getAll({ limit: 10000, offset: 0 }),
         reportsApi.getStats(),
       ]);
-      setReports(reportsData);
+      setAllReports(reportsData);
       setStats(statsData);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -42,10 +50,57 @@ export default function Dashboard() {
     }
   };
 
-  const filteredReports = reports.filter((report) => {
-    if (filterSeverity === 'all') return true;
-    return report.severity?.toLowerCase() === filterSeverity;
+  const filteredReports = allReports.filter((report) => {
+    // Severity filter
+    if (filterSeverity !== 'all' && report.severity?.toLowerCase() !== filterSeverity) {
+      return false;
+    }
+
+    // Search filter (by ID, summary, or hosts)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesId = report.id.toString().includes(query);
+      const matchesSummary = (report.summary || '').toLowerCase().includes(query);
+      const matchesTldr = (report.details?.tldr || '').toLowerCase().includes(query);
+      const matchesHosts = report.hosts?.some(host => host.toLowerCase().includes(query));
+
+      if (!matchesId && !matchesSummary && !matchesTldr && !matchesHosts) {
+        return false;
+      }
+    }
+
+    // Date filter
+    if (dateFilter !== 'all') {
+      const reportDate = new Date(report.created_at);
+      const now = new Date();
+      const diffHours = (now.getTime() - reportDate.getTime()) / (1000 * 60 * 60);
+
+      switch (dateFilter) {
+        case '24h':
+          if (diffHours > 24) return false;
+          break;
+        case '7d':
+          if (diffHours > 24 * 7) return false;
+          break;
+        case '30d':
+          if (diffHours > 24 * 30) return false;
+          break;
+      }
+    }
+
+    return true;
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredReports.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedReports = filteredReports.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterSeverity, searchQuery, dateFilter]);
 
   if (loading) {
     return (
@@ -123,21 +178,56 @@ export default function Dashboard() {
 
       {/* Reports Table */}
       <div className="bg-dark-card border border-dark-border rounded-lg overflow-hidden">
-        <div className="p-6 border-b border-dark-border">
+        <div className="p-6 border-b border-dark-border space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">Recent Threat Reports</h2>
+            <h2 className="text-xl font-semibold text-white">All Threat Reports</h2>
+            <div className="text-sm text-gray-400">
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredReports.length)} of {filteredReports.length} reports
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Search Bar */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by ID, summary, or hostname..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-dark-surface border border-dark-border rounded-lg pl-10 pr-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-info transition-colors"
+              />
+            </div>
+
+            {/* Severity Filter */}
             <div className="flex items-center space-x-2">
               <Filter className="w-4 h-4 text-gray-400" />
               <select
                 value={filterSeverity}
                 onChange={(e) => setFilterSeverity(e.target.value)}
-                className="bg-dark-surface border border-dark-border rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-info"
+                className="bg-dark-surface border border-dark-border rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-info transition-colors"
               >
                 <option value="all">All Severities</option>
                 <option value="critical">Critical</option>
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
+              </select>
+            </div>
+
+            {/* Date Filter */}
+            <div className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4 text-gray-400" />
+              <select
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="bg-dark-surface border border-dark-border rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-info transition-colors"
+              >
+                <option value="all">All Time</option>
+                <option value="24h">Last 24 Hours</option>
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
               </select>
             </div>
           </div>
@@ -174,7 +264,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-dark-border">
-              {filteredReports.map((report) => (
+              {paginatedReports.map((report) => (
                 <tr
                   key={report.id}
                   className="hover:bg-dark-hover transition-colors"
@@ -257,11 +347,75 @@ export default function Dashboard() {
               <Shield className="w-16 h-16 text-gray-600 mx-auto mb-4" />
               <p className="text-gray-400">No threat reports found</p>
               <p className="text-sm text-gray-500 mt-2">
-                System is monitoring for security threats...
+                {searchQuery || filterSeverity !== 'all' || dateFilter !== 'all'
+                  ? 'Try adjusting your filters'
+                  : 'System is monitoring for security threats...'}
               </p>
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {filteredReports.length > 0 && totalPages > 1 && (
+          <div className="bg-dark-surface border-t border-dark-border px-6 py-4">
+            <div className="flex items-center justify-between">
+              {/* Page info */}
+              <div className="text-sm text-gray-400">
+                Page <span className="font-semibold text-white">{currentPage}</span> of{' '}
+                <span className="font-semibold text-white">{totalPages}</span>
+              </div>
+
+              {/* Pagination controls */}
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-gray-400 hover:text-white hover:border-info/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                {/* Page numbers */}
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                          currentPage === pageNum
+                            ? 'bg-info text-white'
+                            : 'bg-dark-card border border-dark-border text-gray-400 hover:text-white hover:border-info/30'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-gray-400 hover:text-white hover:border-info/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
