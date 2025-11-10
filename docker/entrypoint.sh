@@ -93,16 +93,65 @@ echo -e "${GREEN}Initialization complete!${NC}"
 echo "=========================================="
 echo ""
 echo "Components:"
-echo "  - Wazuh Retrieval: Every 5 minutes"
+echo "  - Wazuh Retrieval: Continuous (built-in scheduler)"
 echo "  - Knowledge Ingest: Every 7 days (Sunday 2 AM)"
-echo "  - LLM Analysis: Every 5 minutes (testing mode)"
+echo "  - LLM Analysis: Hourly + Daily"
 echo ""
 echo "Logs:"
 echo "  - Cron: /var/log/cron/cron.log"
 echo "  - Application: /app/logs/"
+echo "  - Wazuh Retrieval: stdout/stderr"
 echo ""
-echo "Starting cron daemon..."
+
+# ============================================================================
+# Run initial jobs on startup
+# ============================================================================
+
+echo "Running initial jobs on startup..."
+echo ""
+
+# 1. Start Wazuh Retrieval daemon (runs immediately, then every 5 min)
+echo -e "${YELLOW}[1/3] Starting Wazuh Alert Retrieval daemon...${NC}"
+cd /app && python3 wazuh_retrieval.py >> /var/log/cron/wazuh_retrieval.log 2>&1 &
+WAZUH_PID=$!
+echo -e "${GREEN}✓ Wazuh Retrieval started (PID: $WAZUH_PID) - will collect alerts immediately${NC}"
+echo ""
+
+# 2. Run Knowledge Ingestion immediately (first sync)
+if [ -n "$OPENCTI_URL" ] && [ -n "$OPENCTI_TOKEN" ]; then
+    echo -e "${YELLOW}[2/3] Running initial OpenCTI knowledge sync...${NC}"
+    echo "This may take several minutes on first run..."
+    cd /app && python3 sync_opencti.py --incremental >> /var/log/cron/opencti_init.log 2>&1 &
+    OPENCTI_PID=$!
+    echo -e "${GREEN}✓ OpenCTI sync started (PID: $OPENCTI_PID) - running in background${NC}"
+else
+    echo -e "${YELLOW}[2/3] Skipping OpenCTI sync (not configured)${NC}"
+fi
+echo ""
+
+# 3. Wait a few seconds for alerts to be collected, then run initial analysis
+echo -e "${YELLOW}[3/3] Waiting 30 seconds for alerts to be collected...${NC}"
+sleep 30
+
+echo -e "${YELLOW}Running initial threat analysis...${NC}"
+cd /app && python3 analyze_threats.py --analyze-now --window 60 >> /var/log/cron/analysis_init.log 2>&1
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓ Initial analysis complete - reports generated${NC}"
+else
+    echo -e "${YELLOW}⚠ Initial analysis completed with warnings (may not have enough alerts yet)${NC}"
+fi
+echo ""
+
+echo "=========================================="
+echo -e "${GREEN}All startup jobs initiated!${NC}"
+echo "=========================================="
+echo ""
+echo "Scheduled tasks (via cron):"
+echo "  - Knowledge sync: Every Sunday at 2 AM"
+echo "  - Threat analysis: Every hour at :15 + daily at 3 AM"
+echo ""
+echo "Starting cron daemon for scheduled tasks..."
 echo "=========================================="
 
-# Execute the main command
+# Execute the main command (cron -f)
 exec "$@"

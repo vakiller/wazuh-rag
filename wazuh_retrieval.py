@@ -136,6 +136,7 @@ def main():
     logger.info("Wazuh Alert Collector Starting")
     logger.info("="*60)
 
+    output_handler = None
     try:
         # Load configuration from environment
         logger.info("Loading configuration from environment variables...")
@@ -182,6 +183,15 @@ def main():
     except Exception as e:
         logger.error(f"Fatal error: {e}", exc_info=True)
         sys.exit(1)
+
+    finally:
+        # Clean up resources
+        if output_handler and hasattr(output_handler, 'close'):
+            try:
+                output_handler.close()
+                logger.info("Output handler closed successfully")
+            except Exception as e:
+                logger.error(f"Error closing output handler: {e}")
 
 
 if __name__ == "__main__":

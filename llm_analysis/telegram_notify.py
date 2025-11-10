@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 def get_telegram_config() -> Optional[Dict[str, Any]]:
     """Fetch Telegram configuration from database"""
+    conn = None
     try:
         conn = psycopg2.connect(
             host=os.getenv('DB_HOST', 'localhost'),
@@ -35,8 +36,6 @@ def get_telegram_config() -> Optional[Dict[str, Any]]:
             """)
             config = cursor.fetchone()
 
-        conn.close()
-
         if config and config['enabled']:
             return dict(config)
         return None
@@ -44,6 +43,9 @@ def get_telegram_config() -> Optional[Dict[str, Any]]:
     except Exception as e:
         logger.error(f"Failed to get Telegram config: {e}")
         return None
+    finally:
+        if conn:
+            conn.close()
 
 
 def should_notify(severity: str, min_severity: str) -> bool:

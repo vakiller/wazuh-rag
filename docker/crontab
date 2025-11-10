@@ -9,14 +9,18 @@ PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 PYTHON=/usr/local/bin/python3
 
 # ============================================================================
-# Phase 1: Wazuh Alert Retrieval - Every 5 minutes
+# Phase 1: Wazuh Alert Retrieval - DO NOT USE CRON
 # ============================================================================
-*/5 * * * * cd /app && /usr/local/bin/python3 wazuh_retrieval.py >> /var/log/cron/cron.log 2>&1
+# wazuh_retrieval.py has built-in APScheduler that runs every 5 minutes.
+# It should be started ONCE by the Dockerfile entrypoint or init script.
+# Running it via cron creates multiple overlapping instances!
+#
+# REMOVED: */5 * * * * cd /app && /usr/local/bin/python3 wazuh_retrieval.py
 
 # ============================================================================
 # Phase 2: Knowledge Ingestion (OpenCTI Sync) - Every 7 days (weekly on Sunday at 2 AM)
 # ============================================================================
-0 2 * * 0 cd /app && /usr/local/bin/python3 sync_opencti.py --incremental >> /var/log/cron/cron.log 2>&1
+0 2 * * 0 cd /app && /usr/local/bin/python3 sync_opencti.py --full >> /var/log/cron/cron.log 2>&1
 
 # ============================================================================
 # Phase 3: LLM Analysis

@@ -417,6 +417,14 @@ def main():
     except Exception as e:
         logger.error(f"Unexpected error: {e}", exc_info=True)
         return 1
+    finally:
+        # Clean up resources
+        if 'storage' in locals() and storage and hasattr(storage, 'close'):
+            try:
+                storage.close()
+                logger.info("Storage connection closed successfully")
+            except Exception as e:
+                logger.error(f"Error closing storage: {e}")
 
 
 if __name__ == '__main__':
