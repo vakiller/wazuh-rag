@@ -198,7 +198,7 @@ class KnowledgeRetriever:
 
         Args:
             faiss_index_path: Path to FAISS index file
-            metadata_db_path: Path to knowledge.db
+            metadata_db_path: Path to knowledge.db (ignored if using PostgreSQL)
             embedding_model_name: Name of embedding model (must match Phase 2)
             device: Device for embedding model (cpu/cuda)
         """
@@ -209,9 +209,12 @@ class KnowledgeRetriever:
 
         self.storage = None
         self.embedder = None
+        self.knowledge_conn = None  # Separate connection for knowledge queries
+        self.use_postgres = bool(os.getenv('DB_HOST'))
 
         logger.info("Initializing knowledge retriever")
         self._init_components()
+        self._init_knowledge_db()
 
     def _init_components(self):
         """Initialize FAISS storage and embedding model"""
@@ -243,6 +246,26 @@ class KnowledgeRetriever:
             f"({self.storage.faiss_index.ntotal} vectors in index)"
         )
 
+    def _init_knowledge_db(self):
+        """Initialize connection to knowledge database (PostgreSQL or SQLite)"""
+        if self.use_postgres:
+            # Connect to PostgreSQL for knowledge metadata
+            import psycopg2
+            import psycopg2.extras
+
+            self.knowledge_conn = psycopg2.connect(
+                host=os.getenv('DB_HOST', 'localhost'),
+                port=os.getenv('DB_PORT', '5432'),
+                database=os.getenv('DB_NAME', 'wazuh_rag'),
+                user=os.getenv('DB_USER', 'wazuh_user'),
+                password=os.getenv('DB_PASSWORD', '')
+            )
+            logger.info(f"Connected to PostgreSQL database: {os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}")
+        else:
+            # Use the SQLite connection from storage
+            self.knowledge_conn = self.storage.db_conn
+            logger.info(f"Using SQLite database for knowledge: {self.metadata_db_path}")
+
     def retrieve_by_mitre_id(self, mitre_ids: Set[str]) -> List[Dict[str, Any]]:
         """
         Retrieve knowledge items by exact MITRE ID match
@@ -258,24 +281,47 @@ class KnowledgeRetriever:
 
         results = []
 
-        for mitre_id in mitre_ids:
-            # Query knowledge database for exact match
-            cursor = self.storage.db_conn.execute("""
-                SELECT * FROM knowledge
-                WHERE entity_type = 'attack-pattern'
-                AND json_extract(metadata, '$.mitre_id') = ?
-            """, (mitre_id,))
+        if self.use_postgres:
+            # PostgreSQL query using JSON operators
+            import psycopg2.extras
 
-            for row in cursor.fetchall():
-                item = dict(row)
-                # Parse JSON metadata
-                if item.get('metadata'):
-                    try:
-                        item['metadata'] = json.loads(item['metadata'])
-                    except json.JSONDecodeError:
-                        item['metadata'] = {}
+            for mitre_id in mitre_ids:
+                with self.knowledge_conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                    cursor.execute("""
+                        SELECT * FROM knowledge
+                        WHERE entity_type = 'attack-pattern'
+                        AND metadata->>'mitre_id' = %s
+                    """, (mitre_id,))
 
-                results.append(item)
+                    for row in cursor.fetchall():
+                        item = dict(row)
+                        # Parse JSON metadata if it's a string
+                        if item.get('metadata') and isinstance(item['metadata'], str):
+                            try:
+                                item['metadata'] = json.loads(item['metadata'])
+                            except json.JSONDecodeError:
+                                item['metadata'] = {}
+
+                        results.append(item)
+        else:
+            # SQLite query using json_extract
+            for mitre_id in mitre_ids:
+                cursor = self.knowledge_conn.execute("""
+                    SELECT * FROM knowledge
+                    WHERE entity_type = 'attack-pattern'
+                    AND json_extract(metadata, '$.mitre_id') = ?
+                """, (mitre_id,))
+
+                for row in cursor.fetchall():
+                    item = dict(row)
+                    # Parse JSON metadata
+                    if item.get('metadata'):
+                        try:
+                            item['metadata'] = json.loads(item['metadata'])
+                        except json.JSONDecodeError:
+                            item['metadata'] = {}
+
+                    results.append(item)
 
         logger.info(f"Retrieved {len(results)} knowledge items by MITRE ID")
 
@@ -385,6 +431,8 @@ class KnowledgeRetriever:
         return all_results
 
     def close(self):
-        """Close storage connection"""
+        """Close storage and database connections"""
         if self.storage:
             self.storage.close()
+        if self.knowledge_conn and self.use_postgres:
+            self.knowledge_conn.close()

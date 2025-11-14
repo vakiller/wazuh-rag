@@ -11,15 +11,20 @@ Coordinates the full analysis pipeline:
 
 import logging
 import yaml
+import sys
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-from .retrieval import AlertRetriever, KnowledgeRetriever
-from .llm_client import LLMClient
-from .storage import ReportStorage
-from .preprocessor import AlertPreprocessor
-from .prompt_templates import (
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Use absolute imports instead of relative
+from llm_analysis.retrieval import AlertRetriever, KnowledgeRetriever
+from llm_analysis.llm_client import LLMClient
+from llm_analysis.storage import ReportStorage
+from llm_analysis.preprocessor import AlertPreprocessor
+from llm_analysis.prompt_templates import (
     SYSTEM_PROMPT,
     format_user_prompt,
     format_alert_evidence,
