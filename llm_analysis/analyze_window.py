@@ -749,8 +749,14 @@ class ThreatAnalyzer:
         if len(llm_output['timeline']) == 0:
             timeline_events = []
             # Group alerts by technique for better timeline
+            # CRITICAL: Sample alerts from throughout the window, not just first N
+            # Take every Nth alert to get good coverage across the entire time window
+            sample_rate = max(1, len(alerts) // 100)  # Sample ~100 alerts evenly distributed
+            sampled_alerts = alerts[::sample_rate]
+            logger.info(f"Sampling {len(sampled_alerts)} alerts from {len(alerts)} total (every {sample_rate}th alert)")
+
             alert_groups = {}
-            for alert in alerts[:20]:
+            for alert in sampled_alerts:
                 mitre_field = alert.get('mitre_techniques')
                 if mitre_field:
                     try:
@@ -763,8 +769,21 @@ class ThreatAnalyzer:
                     except:
                         pass
 
-            # Create timeline entry for each technique
-            for tech_id, tech_alerts in list(alert_groups.items())[:5]:
+            # Log what techniques were found in alerts
+            logger.info(f"Found {len(alert_groups)} unique techniques in alerts: {list(alert_groups.keys())}")
+            for tech_id, tech_alerts in alert_groups.items():
+                logger.info(f"  - {tech_id}: {len(tech_alerts)} alerts")
+
+            # CRITICAL FIX: Sort techniques by rarity (fewer alerts = more important)
+            # This ensures rare critical techniques like T1558.004 appear first
+            sorted_techniques = sorted(
+                alert_groups.items(),
+                key=lambda x: (len(x[1]), x[0])  # Sort by count (ascending), then by ID
+            )
+
+            # Create timeline entry for ALL unique techniques (not just first 5)
+            # This ensures critical rare techniques are always included
+            for tech_id, tech_alerts in sorted_techniques:
                 first_alert = tech_alerts[0]
                 tech_info = technique_map.get(tech_id, {'name': tech_id, 'tactic': 'Unknown'})
 
@@ -777,7 +796,7 @@ class ThreatAnalyzer:
                 })
 
             llm_output['timeline'] = timeline_events
-            logger.info(f"Fallback: Generated timeline with {len(llm_output['timeline'])} events")
+            logger.info(f"Fallback: Generated timeline with {len(llm_output['timeline'])} events (prioritizing rare techniques)")
 
         # Phase 4.2: Check if timeline has "Unknown" placeholders and regenerate if needed
         has_unknown_timeline = any(
@@ -792,9 +811,14 @@ class ThreatAnalyzer:
         if has_unknown_timeline:
             logger.warning("Timeline contains Unknown values, regenerating from alerts")
             # Regenerate timeline completely
+            # CRITICAL: Sample alerts from throughout the window, not just first N
+            sample_rate = max(1, len(alerts) // 100)  # Sample ~100 alerts evenly distributed
+            sampled_alerts = alerts[::sample_rate]
+            logger.info(f"Sampling {len(sampled_alerts)} alerts from {len(alerts)} total (every {sample_rate}th alert)")
+
             timeline_events = []
             alert_groups = {}
-            for alert in alerts[:20]:
+            for alert in sampled_alerts:
                 mitre_field = alert.get('mitre_techniques')
                 if mitre_field:
                     try:
@@ -807,7 +831,19 @@ class ThreatAnalyzer:
                     except:
                         pass
 
-            for tech_id, tech_alerts in list(alert_groups.items())[:5]:
+            # Log what techniques were found in alerts
+            logger.info(f"Found {len(alert_groups)} unique techniques in alerts: {list(alert_groups.keys())}")
+            for tech_id, tech_alerts in alert_groups.items():
+                logger.info(f"  - {tech_id}: {len(tech_alerts)} alerts")
+
+            # CRITICAL FIX: Sort techniques by rarity (fewer alerts = more important)
+            sorted_techniques = sorted(
+                alert_groups.items(),
+                key=lambda x: (len(x[1]), x[0])  # Sort by count (ascending), then by ID
+            )
+
+            # Create timeline entry for ALL unique techniques (not just first 5)
+            for tech_id, tech_alerts in sorted_techniques:
                 first_alert = tech_alerts[0]
                 tech_info = technique_map.get(tech_id, {'name': tech_id, 'tactic': 'N/A'})
 
@@ -820,7 +856,7 @@ class ThreatAnalyzer:
                 })
 
             llm_output['timeline'] = timeline_events
-            logger.info(f"Timeline regenerated: {len(timeline_events)} events with full context")
+            logger.info(f"Timeline regenerated: {len(timeline_events)} events (prioritizing rare techniques)")
         else:
             logger.info("Timeline enhanced: no Unknown values found")
 

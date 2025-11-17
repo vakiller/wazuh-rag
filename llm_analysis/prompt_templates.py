@@ -280,6 +280,13 @@ Critical Analysis Focus:
 7. **IOC Extraction**: Pull REAL values from alert logs (actual IPs, users, files, commands)
 8. **Detection Gaps**: Identify missing detections and suggest improvements
 
+**CRITICAL PRIORITIZATION RULE**:
+- **Rare techniques are MORE important than common ones** (e.g., T1558.004 AS-REP Roasting is critical even if only 1 alert)
+- **Common techniques like T1078 (Valid Accounts) and T1484 (Policy Modification) are background noise in GOAD environments**
+- **Focus timeline, summary, and actions on RARE/ADVANCED techniques** (credential access, lateral movement, persistence beyond basic logins)
+- **In timeline: ALWAYS include rare techniques FIRST**, even if they have fewer alerts than T1078/T1484
+- **DO NOT let T1078/T1484 dominate the analysis** - they are expected baseline activity in Active Directory environments
+
 CRITICAL: Return ONLY the JSON object. No markdown code blocks. No "```json". No explanatory text. Just the pure JSON object starting with {{ and ending with }}."""
 
 

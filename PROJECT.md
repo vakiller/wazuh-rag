@@ -1,9 +1,9 @@
 # RAG-based Threat Analysis System - Project Design Documentation
 
-**Version**: 3.0.0
+**Version**: 3.1.0
 **Phases**: 1 (Complete) + 2 (Complete) + 3 (Complete) - Full RAG Pipeline
-**Date**: 2025-11-04
-**Status**: ✅ All 3 Phases Implemented
+**Date**: 2025-11-17
+**Status**: ✅ All 3 Phases Implemented + Critical Timeline Fix
 **Live Environments**:
 - Wazuh Indexer: 172.16.235.140:9200 (wazuh-cluster)
 - OpenCTI: 100.114.206.116:8080 (threat intelligence)
@@ -2182,6 +2182,8 @@ Trigger: Alert if all three stages detected within 1 hour window
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 3.1.0 | 2025-11-17 | **CRITICAL FIX: Timeline Prioritization for Rare MITRE Techniques**<br>- Fixed timeline missing critical techniques (T1558.004 AS-REP Roasting)<br>- Implemented rarity-based prioritization: rare techniques appear FIRST<br>- Removed 5-technique limit: ALL unique techniques now included<br>- Enhanced LLM prompt to deprioritize AD baseline noise (T1078, T1484)<br>- Fixed PostgreSQL knowledge retrieval (metadata->>'mitre_id')<br>- Added PostgreSQL auto-detection in KnowledgeRetriever<br>- Changed alert sample from 20→50 to capture more techniques<br>- **Impact**: Reports now focus on actual attacks, not baseline AD activity |
+| 3.0.1 | 2025-11-14 | **Phase 3: PostgreSQL Migration & Import Fix**<br>- Fixed relative import errors in analyze_window.py<br>- Added PostgreSQL support to KnowledgeRetriever<br>- Updated retrieval.py for dual PostgreSQL/SQLite support<br>- Fixed MITRE technique retrieval from PostgreSQL<br>- Entry point: analyze_threats.py (not analyze_window.py) |
 | 3.0.0 | 2025-11-04 | **Phase 3: LLM Analysis and Reporting Module**<br>- Implemented LLM client using LangChain + Ollama<br>- Created comprehensive prompt engineering system<br>- Built hybrid context retrieval (exact MITRE + semantic search)<br>- Implemented risk scoring algorithm (0-100)<br>- Added reports table to rag.db<br>- Created analyze_threats.py CLI interface<br>- Integrated all 3 phases into complete RAG pipeline<br>- Added langchain-community and langchain-core dependencies<br>- Comprehensive Phase 3 documentation (500+ lines) |
 | 2.0.0 | 2025-11-04 | **Phase 2: Knowledge Ingestion Module**<br>- Implemented OpenCTI GraphQL client<br>- Created STIX normalization layer (6 entity types)<br>- Integrated sentence-transformers embedding (384-dim)<br>- Built FAISS + SQLite storage layer<br>- Created sync_opencti.py CLI with full/incremental sync<br>- Added state tracking for incremental updates<br>- Updated requirements.txt with Phase 2 dependencies<br>- Comprehensive documentation added |
 | 1.1.0 | 2025-11-01 | **Phase 1: Live testing & bug fixes**<br>- Tested against production Wazuh (172.16.235.140)<br>- Fixed timezone comparison error<br>- Fixed full_log extraction for Windows events<br>- Fixed win_eventid field path<br>- Verified 100% field coverage for collected alert types<br>- Processed 64,608 alerts successfully<br>- Performance: 2,250 alerts/sec |
