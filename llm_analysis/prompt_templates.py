@@ -46,6 +46,12 @@ Your task is to analyze security alerts from Wazuh SIEM along with retrieved thr
    - **Containment**: Immediate actions to stop spread
    - **Eradication**: Steps to remove threat from environment
    - **Recovery**: Actions to restore normal operations
+   
+   **CRITICAL**: For each action, you MUST provide:
+   - **action**: The specific action description
+   - **priority**: High/Medium/Low
+   - **command**: (Optional) Specific CLI command to execute (e.g., PowerShell, Bash, CMD). If not applicable, use null or empty string.
+   - **tools**: (Optional) List of security tools to use (e.g., ["Firewall", "EDR", "Active Directory"]).
 
 7. **Business Impact Assessment**: Analyze:
    - affected_systems (what business functions are impacted)
@@ -123,9 +129,48 @@ Here is an example of the EXACT JSON format you MUST output:
     {{"action": "Establish additional persistence mechanisms", "confidence": "Medium", "reasoning": "Attackers often create backup persistence to maintain access"}}
   ],
   "suggested_actions": {{
-    "containment": ["Isolate affected hosts winterfell and castelblack from network", "Disable compromised user accounts immediately", "Block outbound connections from affected hosts"],
-    "eradication": ["Remove malicious registry key HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run", "Delete mimikatz.exe from all affected systems", "Scan for additional malware"],
-    "recovery": ["Reset passwords for all potentially compromised accounts", "Restore clean registry configuration", "Re-enable hosts after verification", "Monitor for recurrence"]
+    "containment": [
+      {{
+        "action": "Isolate affected hosts winterfell and castelblack from network",
+        "priority": "High",
+        "command": "netsh advfirewall set allprofiles state on",
+        "tools": ["Firewall", "EDR"]
+      }},
+      {{
+        "action": "Disable compromised user accounts immediately",
+        "priority": "High",
+        "command": "Disable-ADAccount -Identity compromised_user",
+        "tools": ["Active Directory"]
+      }}
+    ],
+    "eradication": [
+      {{
+        "action": "Remove malicious registry key HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run",
+        "priority": "High",
+        "command": "reg delete HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run /v MaliciousKey /f",
+        "tools": ["Registry Editor", "PowerShell"]
+      }},
+      {{
+        "action": "Delete mimikatz.exe from all affected systems",
+        "priority": "Medium",
+        "command": "del C:\\\\Windows\\\\Temp\\\\mimikatz.exe",
+        "tools": ["File Explorer"]
+      }}
+    ],
+    "recovery": [
+      {{
+        "action": "Reset passwords for all potentially compromised accounts",
+        "priority": "High",
+        "command": null,
+        "tools": ["Active Directory"]
+      }},
+      {{
+        "action": "Restore clean registry configuration",
+        "priority": "Medium",
+        "command": null,
+        "tools": ["System Restore"]
+      }}
+    ]
   }},
   "business_impact": {{
     "affected_systems": ["Domain controllers", "File servers"],
@@ -177,9 +222,30 @@ REQUIRED JSON STRUCTURE (you must use EXACTLY these field names):
     {{"action": "Specific predicted next action", "confidence": "High", "reasoning": "Why this action is likely based on observed TTPs"}}
   ],
   "suggested_actions": {{
-    "containment": ["Isolate affected host from network", "Disable compromised accounts"],
-    "eradication": ["Remove malicious artifacts", "Patch vulnerabilities"],
-    "recovery": ["Restore from clean backup", "Monitor for recurrence"]
+    "containment": [
+      {{
+        "action": "Isolate affected host from network",
+        "priority": "High",
+        "command": "netsh advfirewall set allprofiles state on",
+        "tools": ["Firewall"]
+      }}
+    ],
+    "eradication": [
+      {{
+        "action": "Remove malicious artifacts",
+        "priority": "High",
+        "command": "del /f /q C:\\\\malware.exe",
+        "tools": ["File System"]
+      }}
+    ],
+    "recovery": [
+      {{
+        "action": "Restore from clean backup",
+        "priority": "Medium",
+        "command": null,
+        "tools": ["Backup System"]
+      }}
+    ]
   }},
   "business_impact": {{
     "affected_systems": ["Domain controllers", "File servers"],
@@ -214,7 +280,7 @@ STRICT RULES:
 3. "severity" must be ONE of: Low, Medium, High, Critical
 4. "timeline" must contain chronological events with: timestamp, host, tactic, technique, description
 5. "mitre_list" must contain objects with: technique_id, technique_name, tactic
-6. "suggested_actions" must be an object with three arrays: containment, eradication, recovery
+6. "suggested_actions" must be an object with three arrays: containment, eradication, recovery. Each item MUST be an object with action, priority, command, and tools.
 7. "business_impact" must be an object with: affected_systems, operational_risk, data_integrity_risk, domain_wide_risk
 8. "iocs" must be an object with arrays for: ips, users, hashes, domains, file_paths, registry_keys, processes, commands
 9. "evidence_map" must link findings to: alert_ids, timestamps, hosts, knowledge_refs

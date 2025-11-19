@@ -92,6 +92,8 @@ export interface Action {
   action: string;
   priority?: string;
   step?: number;
+  command?: string | null;
+  tools?: string[];
 }
 
 export interface KnowledgeItem {

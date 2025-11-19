@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lightbulb, ChevronDown, ChevronUp, Shield, XCircle, CheckCircle } from 'lucide-react';
+import { Lightbulb, ChevronDown, ChevronUp, Shield, XCircle, CheckCircle, Terminal, Copy, Check } from 'lucide-react';
 import type { SuggestedActions } from '@/types';
 
 interface PlaybookProps {
@@ -33,6 +33,7 @@ export default function Playbook({ playbook }: PlaybookProps) {
   const [expandedPhases, setExpandedPhases] = useState<Set<PhaseKey>>(
     new Set(['containment', 'eradication', 'recovery'])
   );
+  const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
 
   const togglePhase = (phase: PhaseKey) => {
     const newExpanded = new Set(expandedPhases);
@@ -42,6 +43,12 @@ export default function Playbook({ playbook }: PlaybookProps) {
       newExpanded.add(phase);
     }
     setExpandedPhases(newExpanded);
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCommand(text);
+    setTimeout(() => setCopiedCommand(null), 2000);
   };
 
   const hasAnyActions = playbook.containment?.length || playbook.eradication?.length || playbook.recovery?.length;
@@ -113,6 +120,8 @@ export default function Playbook({ playbook }: PlaybookProps) {
                     {actions.map((actionItem, index) => {
                       const actionText = typeof actionItem === 'string' ? actionItem : actionItem.action;
                       const priority = typeof actionItem === 'object' ? actionItem.priority : undefined;
+                      const command = typeof actionItem === 'object' ? actionItem.command : undefined;
+                      const tools = typeof actionItem === 'object' ? actionItem.tools : undefined;
 
                       return (
                         <div
@@ -124,17 +133,47 @@ export default function Playbook({ playbook }: PlaybookProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between">
-                              <p className="text-sm text-gray-200 leading-relaxed flex-1">{actionText}</p>
+                              <p className="text-sm text-gray-200 leading-relaxed flex-1 font-medium">{actionText}</p>
                               {priority && (
-                                <span className={`ml-4 flex-shrink-0 px-2 py-1 rounded text-xs font-semibold ${
-                                  priority.toLowerCase() === 'high' ? 'bg-critical/20 text-critical' :
-                                  priority.toLowerCase() === 'medium' ? 'bg-medium/20 text-medium' :
-                                  'bg-low/20 text-low'
-                                }`}>
+                                <span className={`ml-4 flex-shrink-0 px-2 py-1 rounded text-xs font-semibold ${priority.toLowerCase() === 'critical' ? 'bg-critical/20 text-critical border border-critical/30' :
+                                  priority.toLowerCase() === 'high' ? 'bg-high/20 text-high border border-high/30' :
+                                    priority.toLowerCase() === 'medium' ? 'bg-medium/20 text-medium border border-medium/30' :
+                                      'bg-low/20 text-low border border-low/30'
+                                  }`}>
                                   {priority}
                                 </span>
                               )}
                             </div>
+
+                            {/* Tools Tags */}
+                            {tools && tools.length > 0 && (
+                              <div className="mt-3 flex flex-wrap gap-2">
+                                {tools.map((tool, i) => (
+                                  <span key={i} className="px-2 py-1 bg-dark-surface rounded text-xs text-gray-400 border border-dark-border">
+                                    {tool}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Command Block */}
+                            {command && (
+                              <div className="mt-3 relative group">
+                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => copyToClipboard(command)}
+                                    className="p-1.5 bg-dark-surface hover:bg-dark-border rounded-md text-gray-400 hover:text-white transition-colors"
+                                    title="Copy command"
+                                  >
+                                    {copiedCommand === command ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                                  </button>
+                                </div>
+                                <div className="bg-black/50 rounded-md border border-dark-border p-3 font-mono text-sm text-gray-300 overflow-x-auto flex items-start gap-3">
+                                  <Terminal className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                                  <span>{command}</span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

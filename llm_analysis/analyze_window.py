@@ -518,96 +518,192 @@ class ThreatAnalyzer:
         Returns:
             Enhanced actions dict with technique-specific playbooks
         """
+        # Initialize standard structure
+        actions = {
+            'containment': [],
+            'eradication': [],
+            'recovery': []
+        }
+
+        # Helper to normalize action to object
+        def normalize_action(act, default_phase='containment'):
+            if isinstance(act, str):
+                return {
+                    "action": act,
+                    "priority": "Medium",
+                    "command": None,
+                    "tools": []
+                }
+            elif isinstance(act, dict):
+                return {
+                    "action": act.get("action", "Unknown action"),
+                    "priority": act.get("priority", "Medium"),
+                    "command": act.get("command"),
+                    "tools": act.get("tools", [])
+                }
+            return None
+
         # Handle both old (list) and new (dict) formats
         if isinstance(existing_actions, dict):
-            # Ensure each value is a list
-            actions = {}
             for phase in ['containment', 'eradication', 'recovery']:
-                value = existing_actions.get(phase, [])
-                if isinstance(value, list):
-                    actions[phase] = value[:]
-                elif isinstance(value, str):
-                    actions[phase] = [value] if value else []
-                else:
-                    actions[phase] = []
+                items = existing_actions.get(phase, [])
+                if isinstance(items, list):
+                    for item in items:
+                        norm = normalize_action(item)
+                        if norm: actions[phase].append(norm)
+                elif isinstance(items, str):
+                    norm = normalize_action(items)
+                    if norm: actions[phase].append(norm)
         elif isinstance(existing_actions, list):
             # Old format - convert to new format
-            actions = {
-                'containment': [],
-                'eradication': [],
-                'recovery': []
-            }
-            # Try to categorize existing actions
             for action in existing_actions:
                 action_text = str(action) if action else ''
                 if not action_text:
                     continue
+                
+                norm = normalize_action(action_text)
                 if any(keyword in action_text.lower() for keyword in ['isolate', 'disable', 'block', 'stop']):
-                    actions['containment'].append(action_text)
+                    actions['containment'].append(norm)
                 elif any(keyword in action_text.lower() for keyword in ['remove', 'delete', 'scan', 'clean']):
-                    actions['eradication'].append(action_text)
+                    actions['eradication'].append(norm)
                 else:
-                    actions['recovery'].append(action_text)
-        else:
-            # Empty or invalid format
-            actions = {
-                'containment': [],
-                'eradication': [],
-                'recovery': []
-            }
+                    actions['recovery'].append(norm)
 
-        logger.debug(f"Playbook actions after normalization: containment={type(actions['containment'])}, eradication={type(actions['eradication'])}, recovery={type(actions['recovery'])}")
+        logger.debug(f"Playbook actions after normalization: containment={len(actions['containment'])}, eradication={len(actions['eradication'])}, recovery={len(actions['recovery'])}")
+
+        # Helper to check if action exists
+        def action_exists(phase, keyword):
+            return any(keyword in a['action'].lower() for a in actions[phase])
 
         # T1112 - Modify Registry
         if 'T1112' in mitre_techniques:
-            if not any('registry' in a.lower() for a in actions['containment']):
-                actions['containment'].append('Enable real-time registry monitoring and alerting')
-            if not any('registry' in a.lower() for a in actions['eradication']):
-                actions['eradication'].append('Audit and rollback unauthorized registry modifications')
-                actions['eradication'].append('Scan for persistence mechanisms in registry Run keys')
-            if not any('registry' in a.lower() for a in actions['recovery']):
-                actions['recovery'].append('Restore registry from known-good backup')
-                actions['recovery'].append('Implement stricter registry access controls')
+            if not action_exists('containment', 'registry'):
+                actions['containment'].append({
+                    "action": "Enable real-time registry monitoring and alerting",
+                    "priority": "High",
+                    "command": "sysmon -c config.xml", 
+                    "tools": ["Sysmon", "Wazuh"]
+                })
+            if not action_exists('eradication', 'registry'):
+                actions['eradication'].append({
+                    "action": "Audit and rollback unauthorized registry modifications",
+                    "priority": "High",
+                    "command": 'Get-EventLog -LogName Security | Where-Object {$_.EventID -eq 4657}',
+                    "tools": ["PowerShell", "Event Viewer"]
+                })
+                actions['eradication'].append({
+                    "action": "Scan for persistence mechanisms in registry Run keys",
+                    "priority": "High",
+                    "command": 'Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run',
+                    "tools": ["PowerShell"]
+                })
+            if not action_exists('recovery', 'registry'):
+                actions['recovery'].append({
+                    "action": "Restore registry from known-good backup",
+                    "priority": "Medium",
+                    "command": None,
+                    "tools": ["System Restore", "Backup Software"]
+                })
 
         # T1078 - Valid Accounts
         if 'T1078' in mitre_techniques:
-            if not any('credential' in a.lower() or 'password' in a.lower() for a in actions['containment']):
-                actions['containment'].append('Force password reset for all potentially compromised accounts')
-                actions['containment'].append('Enable MFA for all administrative accounts')
-            if not any('account' in a.lower() for a in actions['eradication']):
-                actions['eradication'].append('Review and revoke suspicious authentication sessions')
-            if not any('credential' in a.lower() or 'password' in a.lower() for a in actions['recovery']):
-                actions['recovery'].append('Implement password policy enhancements')
-                actions['recovery'].append('Deploy account anomaly detection')
+            if not action_exists('containment', 'credential') and not action_exists('containment', 'password'):
+                actions['containment'].append({
+                    "action": "Force password reset for all potentially compromised accounts",
+                    "priority": "Critical",
+                    "command": 'net user <username> <new_password> /domain',
+                    "tools": ["Active Directory"]
+                })
+                actions['containment'].append({
+                    "action": "Enable MFA for all administrative accounts",
+                    "priority": "High",
+                    "command": None,
+                    "tools": ["Identity Provider"]
+                })
+            if not action_exists('eradication', 'account'):
+                actions['eradication'].append({
+                    "action": "Review and revoke suspicious authentication sessions",
+                    "priority": "High",
+                    "command": 'Revoke-AzureADUserAllRefreshToken -ObjectId <user_id>',
+                    "tools": ["Azure AD", "Okta"]
+                })
+            if not action_exists('recovery', 'credential') and not action_exists('recovery', 'password'):
+                actions['recovery'].append({
+                    "action": "Implement password policy enhancements",
+                    "priority": "Medium",
+                    "command": 'Set-ADDefaultDomainPasswordPolicy -MinPasswordLength 14',
+                    "tools": ["Group Policy"]
+                })
 
         # T1485 - Data Destruction
         if 'T1485' in mitre_techniques:
-            if not any('backup' in a.lower() for a in actions['containment']):
-                actions['containment'].append('Immediately isolate affected systems to prevent further data loss')
-            if not any('recover' in a.lower() or 'restore' in a.lower() for a in actions['recovery']):
-                actions['recovery'].append('Restore data from Volume Shadow Copies (VSS)')
-                actions['recovery'].append('Restore critical files from backup systems')
-                actions['recovery'].append('Verify data integrity after restoration')
+            if not action_exists('containment', 'backup'):
+                actions['containment'].append({
+                    "action": "Immediately isolate affected systems to prevent further data loss",
+                    "priority": "Critical",
+                    "command": 'netsh advfirewall set allprofiles state on',
+                    "tools": ["Firewall", "EDR"]
+                })
+            if not action_exists('recovery', 'recover') and not action_exists('recovery', 'restore'):
+                actions['recovery'].append({
+                    "action": "Restore data from Volume Shadow Copies (VSS)",
+                    "priority": "High",
+                    "command": 'vssadmin list shadows',
+                    "tools": ["VSSAdmin"]
+                })
+                actions['recovery'].append({
+                    "action": "Verify data integrity after restoration",
+                    "priority": "Medium",
+                    "command": 'Get-FileHash -Algorithm SHA256 <file>',
+                    "tools": ["PowerShell"]
+                })
 
         # T1484 - Domain Policy Modification
         if 'T1484' in mitre_techniques:
-            if not any('policy' in a.lower() or 'gpo' in a.lower() for a in actions['containment']):
-                actions['containment'].append('Audit all Group Policy Objects (GPOs) for unauthorized changes')
-                actions['containment'].append('Revert malicious GPO modifications immediately')
-            if not any('domain' in a.lower() for a in actions['eradication']):
-                actions['eradication'].append('Review domain controller logs for unauthorized administrative actions')
-            if not any('policy' in a.lower() for a in actions['recovery']):
-                actions['recovery'].append('Restore GPOs from known-good backups')
-                actions['recovery'].append('Implement GPO change monitoring and approval workflow')
+            if not action_exists('containment', 'policy') and not action_exists('containment', 'gpo'):
+                actions['containment'].append({
+                    "action": "Audit all Group Policy Objects (GPOs) for unauthorized changes",
+                    "priority": "High",
+                    "command": 'Get-GPO -All',
+                    "tools": ["Group Policy Management"]
+                })
+            if not action_exists('eradication', 'domain'):
+                actions['eradication'].append({
+                    "action": "Review domain controller logs for unauthorized administrative actions",
+                    "priority": "High",
+                    "command": 'Get-EventLog -LogName Security -InstanceId 5136',
+                    "tools": ["Event Viewer"]
+                })
+            if not action_exists('recovery', 'policy'):
+                actions['recovery'].append({
+                    "action": "Restore GPOs from known-good backups",
+                    "priority": "High",
+                    "command": 'Restore-GPO -Name <GPOName> -Path <BackupPath>',
+                    "tools": ["Group Policy Management"]
+                })
 
         # T1003 - Credential Dumping
         if 'T1003' in mitre_techniques:
-            if not any('credential' in a.lower() for a in actions['containment']):
-                actions['containment'].append('Reset all domain administrator credentials immediately')
-                actions['containment'].append('Enable Credential Guard on all endpoints')
-            if not any('lsass' in a.lower() or 'mimikatz' in a.lower() for a in actions['eradication']):
-                actions['eradication'].append('Scan for credential dumping tools (mimikatz, procdump)')
-                actions['eradication'].append('Clear LSASS memory and restart affected systems')
+            if not action_exists('containment', 'credential'):
+                actions['containment'].append({
+                    "action": "Reset all domain administrator credentials immediately",
+                    "priority": "Critical",
+                    "command": 'net user <admin_user> <new_password> /domain',
+                    "tools": ["Active Directory"]
+                })
+                actions['containment'].append({
+                    "action": "Enable Credential Guard on all endpoints",
+                    "priority": "Medium",
+                    "command": None,
+                    "tools": ["Group Policy"]
+                })
+            if not action_exists('eradication', 'lsass') and not action_exists('eradication', 'mimikatz'):
+                actions['eradication'].append({
+                    "action": "Scan for credential dumping tools (mimikatz, procdump)",
+                    "priority": "High",
+                    "command": 'Get-ChildItem -Path C:\\ -Include mimikatz.exe,procdump.exe -Recurse -ErrorAction SilentlyContinue',
+                    "tools": ["PowerShell", "EDR"]
+                })
 
         logger.info(f"Enhanced playbooks: {len(actions['containment'])} containment, {len(actions['eradication'])} eradication, {len(actions['recovery'])} recovery actions")
         return actions

@@ -2,7 +2,7 @@
 
 # LLM Settings (Ollama)
 llm:
-  base_url: "http://192.168.1.3:11434"
+  base_url: "http://192.168.1.2:11434"
   model: "llama3.1:8b-instruct-q4_K_M"
   temperature: 0.1              # Low temperature for consistent analysis
   timeout: 120                  # Request timeout in seconds
