@@ -11,25 +11,50 @@ interface StatsCardProps {
 
 export default function StatsCard({ title, value, icon: Icon, trend, color = 'info' }: StatsCardProps) {
   const colorClasses = {
-    info: 'text-info bg-info/10 border-info/20',
-    critical: 'text-critical bg-critical/10 border-critical/20',
-    high: 'text-high bg-high/10 border-high/20',
-    medium: 'text-medium bg-medium/10 border-medium/20',
-    low: 'text-low bg-low/10 border-low/20',
+    info: 'text-info border-info/30 neon-glow-cyan',
+    critical: 'text-critical border-critical/30 neon-glow-critical',
+    high: 'text-high border-high/30 neon-glow-high',
+    medium: 'text-medium border-medium/30 neon-glow-medium',
+    low: 'text-low border-low/30 neon-glow-low',
+  };
+
+  const bgClasses = {
+    info: 'bg-info',
+    critical: 'bg-critical',
+    high: 'bg-high',
+    medium: 'bg-medium',
+    low: 'bg-low',
   };
 
   return (
-    <div className="bg-dark-card border border-dark-border rounded-lg p-6 hover:border-dark-hover transition-all animate-slide-in">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-gray-400">{title}</h3>
-        <div className={cn('p-2 rounded-lg border', colorClasses[color])}>
-          <Icon className="w-5 h-5" />
+    <div className="stat-card p-6 rounded-lg animate-fade-in-up hover:scale-105 transition-all duration-300">
+      <div className="flex items-start justify-between relative z-10">
+        <div className="flex-1">
+          <p className="text-gray-400 text-xs font-mono uppercase tracking-wider mb-2">
+            {title}
+          </p>
+          <p className={cn(
+            'text-4xl font-bold terminal-text mb-2',
+            colorClasses[color]
+          )}>
+            {value}
+          </p>
+          {trend && (
+            <p className="text-gray-500 text-xs font-mono">
+              {trend}
+            </p>
+          )}
+        </div>
+        <div className={cn(
+          'p-4 rounded-lg border-2 backdrop-blur-sm',
+          colorClasses[color],
+          `bg-${color}-bg`
+        )}>
+          <Icon className="w-8 h-8" />
         </div>
       </div>
-      <div className="space-y-1">
-        <p className="text-3xl font-bold text-white">{value}</p>
-        {trend && <p className="text-xs text-gray-500">{trend}</p>}
-      </div>
+      {/* Animated scan line effect */}
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-info/50 to-transparent animate-scan-line opacity-50"></div>
     </div>
   );
 }

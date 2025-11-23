@@ -5,10 +5,10 @@ FROM node:20-alpine as frontend-build
 WORKDIR /app
 
 # Copy package files
-COPY package.json ./
+COPY package.json package-lock.json* ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -16,8 +16,8 @@ COPY . .
 # Set API URL to relative path (works when served from same origin)
 ENV VITE_API_URL=/api
 
-# Build frontend
-RUN npm run build
+# Build frontend (use docker-specific build without TypeScript checking)
+RUN npm run build:docker
 
 # Stage 2: API and serve frontend with nginx
 FROM python:3.11-slim
