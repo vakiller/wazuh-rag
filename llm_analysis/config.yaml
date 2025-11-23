@@ -1,9 +1,11 @@
 # Phase 3: LLM Analysis and Reporting Configuration
 
 # LLM Settings (Ollama)
+# NOTE: DeepSeek-R1 optimized for reasoning and pattern analysis
+# Prompts designed for minimal instruction, emphasis on log-based prediction
 llm:
   base_url: "http://192.168.1.2:11434"
-  model: "llama3.1:8b-instruct-q4_K_M"
+  model: "deepseek-r1:8b"
   temperature: 0.1              # Low temperature for consistent analysis
   timeout: 120                  # Request timeout in seconds
   max_retries: 3                # Retry on failure

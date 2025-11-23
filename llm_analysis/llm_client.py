@@ -137,6 +137,7 @@ class LLMClient:
         - Pure JSON
         - JSON wrapped in markdown code blocks
         - JSON with additional text before/after
+        - DeepSeek-R1 <think>...</think> and <answer>...</answer> tags
 
         Args:
             response: Raw LLM response
@@ -144,6 +145,12 @@ class LLMClient:
         Returns:
             Parsed JSON dict or None if parsing fails
         """
+        # DeepSeek-R1 specific: Extract from <answer> tags if present
+        answer_match = re.search(r'<answer>\s*(.*?)\s*</answer>', response, re.DOTALL | re.IGNORECASE)
+        if answer_match:
+            response = answer_match.group(1)
+            logger.debug("Extracted content from DeepSeek-R1 <answer> tags")
+
         # Try direct JSON parse first
         try:
             return json.loads(response)
@@ -158,7 +165,7 @@ class LLMClient:
             except json.JSONDecodeError:
                 pass
 
-        # Try to find JSON object in text
+        # Try to find JSON object in text (greedy match for complete object)
         json_match = re.search(r'\{.*\}', response, re.DOTALL)
         if json_match:
             try:
