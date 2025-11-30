@@ -32,7 +32,8 @@ Analyze security alerts from Wazuh SIEM and OpenCTI threat intelligence to produ
    - timestamp, host, tactic, technique, description of observed behavior
 
 5. **MITRE Mapping**: Extract techniques from logs and match with knowledge base:
-   - technique_id, technique_name, tactic
+   - technique_id, technique_name, tactic (SINGULAR field name, use comma-separated string for multiple tactics)
+   ⚠️ CRITICAL: Field name is "tactic" NOT "tactics"!
 
 6. **Predictive Analysis** (CRITICAL - Your Core Value):
    Analyze the sequence of observed log events to predict next attacker moves:
@@ -41,7 +42,11 @@ Analyze security alerts from Wazuh SIEM and OpenCTI threat intelligence to produ
    - Study process chains to anticipate lateral movement vectors
    - Use observed credential usage to predict privilege escalation attempts
    - Base predictions on actual log patterns, NOT just MITRE technique descriptions
-   - Provide 3 predictions with: action, confidence (High/Medium/Low), reasoning from log evidence
+
+   ⚠️ CRITICAL OUTPUT FORMAT:
+   - Return array of OBJECTS, NOT array of strings!
+   - Each prediction MUST have: {{{{action, confidence, reasoning}}}}
+   - Provide 3-6 predictions
 
 6. **Incident Response Workflow**: Provide structured response in THREE phases:
    - **Containment**: Immediate actions to stop spread
@@ -122,10 +127,12 @@ REQUIRED JSON STRUCTURE (you must use EXACTLY these field names):
     {{"timestamp": "2025-11-04T10:30:00Z", "host": "server01", "tactic": "Initial Access", "technique": "T1078 - Valid Accounts", "description": "Successful login with compromised credentials"}}
   ],
   "mitre_list": [
-    {{"technique_id": "T1078", "technique_name": "Valid Accounts", "tactic": "Persistence"}}
+    {{"technique_id": "T1078", "technique_name": "Valid Accounts", "tactic": "Persistence, Initial Access"}},
+    {{"technique_id": "T1003", "technique_name": "OS Credential Dumping", "tactic": "Credential Access"}}
   ],
   "predictions": [
-    {{"action": "Specific predicted next action", "confidence": "High", "reasoning": "Why this action is likely based on observed TTPs"}}
+    {{"action": "Attacker will attempt lateral movement using compromised credentials", "confidence": "High", "reasoning": "Based on observed credential dumping and enumeration patterns across multiple hosts"}},
+    {{"action": "Deploy additional backdoors for persistence", "confidence": "Medium", "reasoning": "Common follow-up action after initial access is established"}}
   ],
   "suggested_actions": {{
     "containment": [
@@ -180,20 +187,39 @@ REQUIRED JSON STRUCTURE (you must use EXACTLY these field names):
   "confidence_overall": 85
 }}
 
-STRICT RULES:
+⚠️ CRITICAL - STRICT RULES ⚠️
+
 1. Return ONLY the JSON object - no markdown, no code blocks, no extra text
 2. All field names must match EXACTLY as shown above
 3. "severity" must be ONE of: Low, Medium, High, Critical
-4. "timeline" must contain chronological events with: timestamp, host, tactic, technique, description
-5. "mitre_list" must contain objects with: technique_id, technique_name, tactic
-6. "suggested_actions" must be an object with three arrays: containment, eradication, recovery. Each item MUST be an object with action, priority, command, and tools.
-7. "business_impact" must be an object with: affected_systems, operational_risk, data_integrity_risk, domain_wide_risk
-8. "iocs" must be an object with arrays for: ips, users, hashes, domains, file_paths, registry_keys, processes, commands
-9. "evidence_map" must link findings to: alert_ids, timestamps, hosts, knowledge_refs
-10. "detection_recommendations" must contain objects with: type, description
-11. If a field has no data, use empty array [] or empty string "", but the field MUST exist
-12. Do NOT use alternative field names - use EXACTLY the names shown above
-13. Do NOT nest the structure under other keys
+
+4. ❌ COMMON MISTAKES TO AVOID:
+   - DO NOT use "tactics" (plural) - use "tactic" (singular) in mitre_list
+   - DO NOT return predictions as array of strings - MUST be array of objects with {{{{action, confidence, reasoning}}}}
+   - DO NOT use alternative field names
+
+5. "timeline" must contain chronological events with: timestamp, host, tactic, technique, description
+
+6. "mitre_list" must contain objects with: technique_id, technique_name, tactic
+   ⚠️ CRITICAL: Use "tactic" NOT "tactics"! If multiple tactics, use comma-separated string: "Initial Access, Persistence"
+
+7. "predictions" MUST be array of objects with {{{{action, confidence, reasoning}}}}
+   ⚠️ CRITICAL: NOT array of strings! Example: [{{"action": "...", "confidence": "High", "reasoning": "..."}}]
+
+8. "suggested_actions" must be an object with three arrays: containment, eradication, recovery
+   Each item MUST be an object with: action, priority, command (can be null), tools (can be empty array)
+
+9. "business_impact" must be an object with: affected_systems, operational_risk, data_integrity_risk, domain_wide_risk
+
+10. "iocs" must be an object with arrays for: ips, users, hashes, domains, file_paths, registry_keys, processes, commands
+
+11. "evidence_map" must link findings to: alert_ids, timestamps, hosts, knowledge_refs
+
+12. "detection_recommendations" must contain objects with: type, description
+
+13. If a field has no data, use empty array [] or empty string "", but the field MUST exist
+
+14. Do NOT nest the structure under other keys
 
 IMPORTANT: Base your analysis ONLY on the provided evidence and retrieved knowledge. Do NOT hallucinate or invent details not present in the data. Extract actual IOCs from the alert logs - use real IP addresses, usernames, file paths, and commands from the evidence provided.
 """
@@ -228,13 +254,18 @@ The following knowledge items were retrieved from OpenCTI threat intelligence da
 
 Analyze the above evidence and retrieved knowledge to produce a comprehensive professional-grade SOC incident analysis report.
 
+⚠️ CRITICAL REMINDERS:
+1. Field "tactic" in mitre_list is SINGULAR, NOT "tactics"
+2. Field "predictions" MUST be array of objects {{{{action, confidence, reasoning}}}}, NOT array of strings
+3. All field names must match the JSON example EXACTLY
+
 You MUST return ONLY a JSON object with EXACTLY these top-level fields (all are required):
 - summary (comprehensive incident description)
 - severity (Low | Medium | High | Critical)
 - tldr (one sentence summary)
 - timeline (chronological attack progression)
-- mitre_list (all techniques with IDs, names, tactics)
-- predictions (attacker's next likely actions)
+- mitre_list (technique_id, technique_name, **tactic** ← singular!)
+- predictions (array of objects with action, confidence, reasoning ← NOT strings!)
 - suggested_actions (containment, eradication, recovery)
 - business_impact (affected systems, risks)
 - evidence_map (findings linked to alerts, timestamps, hosts)

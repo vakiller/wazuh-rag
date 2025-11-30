@@ -37,12 +37,12 @@ export default function ReportDetail() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-dark-bg">
+      <div className="flex items-center justify-center h-screen bg-neutral-50">
         <div className="text-center">
           <Brain className="w-16 h-16 text-info animate-pulse mx-auto mb-6" />
           <div className="space-y-2">
-            <p className="text-xl font-semibold text-white">Analyzing Threat Intelligence</p>
-            <p className="text-sm text-gray-400">Reconstructing attack timeline with llm...</p>
+            <p className="text-xl font-semibold text-neutral-900">Analyzing Threat Intelligence</p>
+            <p className="text-sm text-neutral-700 font-medium">Reconstructing attack timeline with llm...</p>
           </div>
         </div>
       </div>
@@ -51,13 +51,13 @@ export default function ReportDetail() {
 
   if (!report) {
     return (
-      <div className="flex items-center justify-center h-screen bg-dark-bg">
+      <div className="flex items-center justify-center h-screen bg-neutral-50">
         <div className="text-center">
-          <FileWarning className="w-20 h-20 text-gray-600 mx-auto mb-6" />
-          <p className="text-xl text-gray-400 mb-6">Report not found</p>
+          <FileWarning className="w-20 h-20 text-neutral-400 mx-auto mb-6" />
+          <p className="text-xl text-neutral-900 font-medium mb-6">Report not found</p>
           <Link
             to="/"
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-info hover:bg-info-light text-white rounded-lg transition-colors"
+            className="btn-primary inline-flex items-center space-x-2"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Return to Dashboard</span>
@@ -74,12 +74,12 @@ export default function ReportDetail() {
   });
 
   return (
-    <div className="min-h-screen bg-dark-bg">
-      <div className="p-8 space-y-8 max-w-[1800px] mx-auto">
+    <div className="min-h-screen bg-neutral-50">
+      <div className="p-12 space-y-12 max-w-7xl mx-auto">
         {/* Back Button */}
         <Link
           to="/"
-          className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors group"
+          className="inline-flex items-center space-x-2 text-neutral-700 hover:text-neutral-900 transition-colors group font-medium"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
           <span>Back to Dashboard</span>
@@ -160,25 +160,25 @@ export default function ReportDetail() {
 
         {/* AI Predictions Section (if available) */}
         {report.details?.predictions && report.details.predictions.length > 0 && (
-          <div className="bg-gradient-to-br from-high/10 to-high/5 border-2 border-high/30 rounded-xl p-8">
+          <div className="bg-high-light border-2 border-high p-8">
             <div className="flex items-center space-x-3 mb-6">
               <Brain className="w-6 h-6 text-high" />
-              <h3 className="text-2xl font-bold text-white">AI-Predicted Next Actions</h3>
+              <h3 className="text-2xl font-medium text-neutral-900">AI-Predicted Next Actions</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {report.details.predictions.map((pred, idx) => (
                 <div
                   key={idx}
-                  className="bg-dark-card border border-dark-border rounded-lg p-6 hover:border-high/40 transition-all"
+                  className="bg-white border border-neutral-300 p-6 hover:shadow-md transition-all"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <span className="px-3 py-1 bg-high/20 text-high rounded-full text-xs font-bold">
+                    <span className="px-3 py-1 bg-high-light text-high-dark border border-high text-xs font-bold">
                       {pred.confidence}
                     </span>
                   </div>
-                  <p className="text-white font-semibold mb-2">{pred.action}</p>
+                  <p className="text-neutral-900 font-semibold mb-2">{pred.action}</p>
                   {pred.reasoning && (
-                    <p className="text-sm text-gray-400">{pred.reasoning}</p>
+                    <p className="text-sm text-neutral-700">{pred.reasoning}</p>
                   )}
                 </div>
               ))}

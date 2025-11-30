@@ -11,50 +11,47 @@ interface StatsCardProps {
 
 export default function StatsCard({ title, value, icon: Icon, trend, color = 'info' }: StatsCardProps) {
   const colorClasses = {
-    info: 'text-info border-info/30 neon-glow-cyan',
-    critical: 'text-critical border-critical/30 neon-glow-critical',
-    high: 'text-high border-high/30 neon-glow-high',
-    medium: 'text-medium border-medium/30 neon-glow-medium',
-    low: 'text-low border-low/30 neon-glow-low',
+    info: 'text-info',
+    critical: 'text-critical',
+    high: 'text-high',
+    medium: 'text-medium',
+    low: 'text-low',
   };
 
   const bgClasses = {
-    info: 'bg-info',
-    critical: 'bg-critical',
-    high: 'bg-high',
-    medium: 'bg-medium',
-    low: 'bg-low',
+    info: 'bg-info-light',
+    critical: 'bg-critical-light',
+    high: 'bg-high-light',
+    medium: 'bg-medium-light',
+    low: 'bg-low-light',
   };
 
   return (
-    <div className="stat-card p-6 rounded-lg animate-fade-in-up hover:scale-105 transition-all duration-300">
-      <div className="flex items-start justify-between relative z-10">
+    <div className="bg-white border border-neutral-300 p-6 transition-shadow duration-200 hover:shadow-md animate-fade-in">
+      <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-gray-400 text-xs font-mono uppercase tracking-wider mb-2">
+          <p className="text-xs font-medium uppercase tracking-wider text-neutral-700 mb-2">
             {title}
           </p>
           <p className={cn(
-            'text-4xl font-bold terminal-text mb-2',
+            'text-4xl font-light tracking-tight mb-1',
             colorClasses[color]
           )}>
             {value}
           </p>
           {trend && (
-            <p className="text-gray-500 text-xs font-mono">
+            <p className="text-sm text-neutral-700 font-medium">
               {trend}
             </p>
           )}
         </div>
         <div className={cn(
-          'p-4 rounded-lg border-2 backdrop-blur-sm',
-          colorClasses[color],
-          `bg-${color}-bg`
+          'p-3 transition-colors duration-200',
+          bgClasses[color]
         )}>
-          <Icon className="w-8 h-8" />
+          <Icon className={cn("w-6 h-6", colorClasses[color])} />
         </div>
       </div>
-      {/* Animated scan line effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-info/50 to-transparent animate-scan-line opacity-50"></div>
     </div>
   );
 }

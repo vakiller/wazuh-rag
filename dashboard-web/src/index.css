@@ -1,29 +1,30 @@
+/* Import clean sans-serif fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Import fonts for terminal aesthetic */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 0 0% 13%;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-  }
-}
-
-@layer base {
   * {
-    @apply border-command-border;
+    @apply border-neutral-300;
   }
+
   body {
-    @apply bg-command-void text-gray-100 antialiased font-sans;
+    @apply bg-swiss-white text-neutral-900 font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Remove all pseudo-elements */
+  body::before,
+  body::after {
+    content: none;
   }
 }
 
@@ -36,205 +37,182 @@
     display: none;
   }
 
-  /* Neon glow effects */
-  .neon-glow-cyan {
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.5),
-                0 0 20px rgba(0, 240, 255, 0.3),
-                0 0 30px rgba(0, 240, 255, 0.2);
+  /* Thin scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
 
-  .neon-glow-critical {
-    box-shadow: 0 0 10px rgba(255, 8, 68, 0.5),
-                0 0 20px rgba(255, 8, 68, 0.3);
+  /* Scrollbar colors */
+  .scrollbar-thumb-neutral-300::-webkit-scrollbar-thumb {
+    background-color: #d4d4d4;
+    border-radius: 3px;
+  }
+  .scrollbar-thumb-neutral-300::-webkit-scrollbar-thumb:hover {
+    background-color: #a3a3a3;
+  }
+  .scrollbar-track-neutral-100::-webkit-scrollbar-track {
+    background-color: #f5f5f5;
   }
 
-  .neon-glow-high {
-    box-shadow: 0 0 10px rgba(255, 107, 53, 0.5),
-                0 0 20px rgba(255, 107, 53, 0.3);
+  /* Minimalist card */
+  .minimal-card {
+    @apply bg-white border border-neutral-300 transition-shadow duration-200;
   }
 
-  .neon-glow-medium {
-    box-shadow: 0 0 10px rgba(255, 184, 0, 0.5),
-                0 0 20px rgba(255, 184, 0, 0.3);
+  .minimal-card:hover {
+    @apply shadow-md;
   }
 
-  .neon-glow-low {
-    box-shadow: 0 0 10px rgba(180, 255, 57, 0.5),
-                0 0 20px rgba(180, 255, 57, 0.3);
+  /* Clean button */
+  .btn-minimal {
+    @apply bg-white border border-neutral-300 text-neutral-900 px-4 py-2 transition-all duration-200;
   }
 
-  /* Hexagon shape utility */
-  .hexagon {
-    clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+  .btn-minimal:hover {
+    @apply bg-neutral-100 border-neutral-400;
   }
 
-  /* Diagonal cut utility */
-  .diagonal-cut {
-    clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+  .btn-minimal:active {
+    @apply bg-neutral-200;
   }
 
-  .diagonal-cut-reverse {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 90%);
+  /* Primary button */
+  .btn-primary {
+    @apply bg-neutral-900 text-white px-4 py-2 transition-all duration-200;
   }
 
-  /* Terminal-style text */
-  .terminal-text {
-    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    text-shadow: 0 0 5px currentColor;
-    letter-spacing: 0.05em;
+  .btn-primary:hover {
+    @apply bg-neutral-800;
   }
 
-  /* Grid background utility */
-  .command-grid {
-    background-image:
-      linear-gradient(rgba(35, 41, 55, 0.5) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(35, 41, 55, 0.5) 1px, transparent 1px);
-    background-size: 20px 20px;
+  .btn-primary:active {
+    @apply bg-neutral-700;
+  }
+
+  /* Clean input */
+  .input-minimal {
+    @apply bg-white border border-neutral-300 px-3 py-2 text-neutral-900 transition-all duration-200;
+  }
+
+  .input-minimal:focus {
+    @apply outline-none border-neutral-900 ring-1 ring-neutral-900;
+  }
+
+  /* Typography hierarchy */
+  .text-display {
+    @apply text-4xl font-light tracking-tight text-neutral-900;
+  }
+
+  .text-heading {
+    @apply text-2xl font-medium tracking-tight text-neutral-900;
+  }
+
+  .text-subheading {
+    @apply text-xl font-normal text-neutral-900;
+  }
+
+  .text-body {
+    @apply text-base text-neutral-900;
+  }
+
+  .text-caption {
+    @apply text-sm text-neutral-700 font-medium;
+  }
+
+  .text-label {
+    @apply text-xs font-medium uppercase tracking-wider text-neutral-700;
+  }
+
+  /* Grid system */
+  .grid-swiss {
+    @apply grid gap-6;
+  }
+
+  /* Divider */
+  .divider {
+    @apply h-px bg-neutral-300;
+  }
+
+  /* Sharp shadow */
+  .shadow-sharp {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Severity badges - minimal */
+  .badge-critical {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium bg-critical-light text-critical-dark border border-critical;
+  }
+
+  .badge-high {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium bg-high-light text-high-dark border border-high;
+  }
+
+  .badge-medium {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium bg-medium-light text-medium-dark border border-medium;
+  }
+
+  .badge-low {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium bg-low-light text-low-dark border border-low;
   }
 }
 
-/* Neon scrollbar */
+/* Minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-command-surface;
+  background: #FAFAFA;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-info;
-  border-radius: 10px;
-  box-shadow: 0 0 6px rgba(0, 240, 255, 0.5);
+  background: #E0E0E0;
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-neon-cyan;
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+  background: #BDBDBD;
 }
 
-/* Animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Clean table styles */
+table {
+  @apply w-full border-collapse;
 }
 
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
+table thead {
+  @apply bg-neutral-50 border-b-2 border-neutral-900;
 }
 
-/* HUD-style panel */
-.hud-panel {
-  position: relative;
-  background: linear-gradient(135deg,
-    rgba(17, 24, 39, 0.95) 0%,
-    rgba(26, 31, 46, 0.90) 100%);
-  border: 1px solid #232937;
-  backdrop-filter: blur(10px);
+table th {
+  @apply text-left text-xs font-medium uppercase tracking-wider text-neutral-900 px-6 py-3;
 }
 
-.hud-panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(0, 240, 255, 0.5) 50%,
-    transparent 100%);
+table tbody tr {
+  @apply border-b border-neutral-200 transition-colors duration-150;
 }
 
-/* Stat card with diagonal */
-.stat-card {
-  position: relative;
-  background: linear-gradient(135deg, #111827 0%, #1a1f2e 100%);
-  border: 1px solid #232937;
-  overflow: hidden;
-}
-
-.stat-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100px;
-  height: 100%;
-  background: linear-gradient(135deg, transparent 0%, rgba(0, 240, 255, 0.05) 100%);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 30% 100%);
-}
-
-/* Table hover effect */
 table tbody tr:hover {
-  background: rgba(0, 240, 255, 0.05);
-  border-left: 2px solid #00f0ff;
+  @apply bg-neutral-50;
 }
 
-/* Neon button effect */
-.btn-neon {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
+table td {
+  @apply px-6 py-4 text-sm text-neutral-900;
 }
 
-.btn-neon::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(0, 240, 255, 0.3),
-    transparent);
-  transition: left 0.5s ease;
-}
-
-.btn-neon:hover::before {
-  left: 100%;
-}
-
-/* Input focus */
-input[type="text"]:focus,
-input[type="search"]:focus,
-select:focus {
-  outline: none;
-  border-color: #00f0ff !important;
-  box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.2),
-              0 0 10px rgba(0, 240, 255, 0.3) !important;
-}
-
-/* Hexagon background decoration */
-.hex-decoration {
-  position: relative;
-  overflow: hidden;
-}
-
-.hex-decoration::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 300px;
-  height: 300px;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill='none' stroke='rgba(0, 240, 255, 0.1)' stroke-width='1'/%3E%3C/svg%3E");
-  opacity: 0.3;
-  pointer-events: none;
-  animation: hexagon-pulse 3s ease-in-out infinite;
-}
-
-/* Neon text glow */
-.text-neon {
-  text-shadow: 0 0 5px currentColor,
-               0 0 10px currentColor,
-               0 0 15px currentColor;
+/* Remove all decorative effects */
+.hex-decoration::after,
+.pixel-corners::before,
+.pixel-corners::after,
+.retro-border::before,
+.crt-container::before,
+.stat-card::before,
+.stat-card::after,
+.hud-panel::before {
+  content: none !important;
+  display: none !important;
 }

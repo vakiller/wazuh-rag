@@ -3339,3 +3339,422 @@ psycopg2.OperationalError: connection to server at "localhost" (127.0.0.1), port
 2025-11-23 04:25:05,014 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
 2025-11-23 04:25:05,015 - llm_analysis.storage - INFO - Database connection closed
 2025-11-23 04:25:05,015 - llm_analysis.analyze_window - INFO - Threat Analyzer closed
+2025-11-25 18:35:27,039 - __main__ - INFO - ================================================================================
+2025-11-25 18:35:27,039 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-25 18:35:27,040 - __main__ - INFO - ================================================================================
+2025-11-25 18:35:27,047 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-25 18:35:27,047 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-25 18:35:27,076 - __main__ - ERROR - Error: connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+Traceback (most recent call last):
+  File "/home/aid3n/security_projects/rag_wazuh/analyze_threats.py", line 352, in main
+    analyzer = ThreatAnalyzer(config_path=args.config)
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 60, in __init__
+    self._init_components()
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 77, in _init_components
+    self.alert_retriever = AlertRetriever(db_path)
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/retrieval.py", line 44, in __init__
+    self.conn = psycopg2.connect(
+  File "/home/aid3n/.local/lib/python3.10/site-packages/psycopg2/__init__.py", line 122, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+2025-11-25 18:36:57,920 - __main__ - INFO - ================================================================================
+2025-11-25 18:36:57,920 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-25 18:36:57,920 - __main__ - INFO - ================================================================================
+2025-11-25 18:36:57,927 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-25 18:36:57,927 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-25 18:36:57,974 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 18:36:57,974 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-25 18:36:58,219 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-25 11:37:03,969 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-25 11:37:07,562 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-25 11:37:07,563 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-25 11:37:07,567 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-25 11:37:07,599 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-25 11:37:07,606 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-25 11:37:07,607 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-25 11:37:07,607 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (0 vectors in index)
+2025-11-25 11:37:07,626 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 11:37:07,626 - llm_analysis.llm_client - INFO - Initializing LLM client: deepseek-r1:8b at http://localhost:11434/
+2025-11-25 11:37:08,362 - llm_analysis.llm_client - WARNING - Using deprecated langchain-community. Consider upgrading: pip install -U langchain-ollama
+2025-11-25 11:37:08,362 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-25 11:37:08,375 - llm_analysis.storage - INFO - Connected to PostgreSQL database for reports: localhost/wazuh_rag
+2025-11-25 11:37:08,375 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-25 11:37:08,376 - llm_analysis.analyze_window - INFO - Starting analysis for window: 2025-11-25T11:07:08.376033 to 2025-11-25T11:37:08.376033
+2025-11-25 11:37:08,376 - llm_analysis.retrieval - INFO - Querying alerts from 2025-11-25T11:07:08.376033 to 2025-11-25T11:37:08.376033
+2025-11-25 11:37:08,439 - llm_analysis.retrieval - INFO - Retrieved 697 alerts from database
+2025-11-25 11:37:08,439 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1558.004', 'T1484', 'T1078'}
+2025-11-25 11:37:08,439 - llm_analysis.analyze_window - INFO - Analyzing 697 alerts from 6 hosts, 3 MITRE techniques
+2025-11-25 11:37:08,440 - llm_analysis.preprocessor - INFO - Preprocessing 697 alerts for deterministic extraction
+2025-11-25 11:37:08,779 - llm_analysis.preprocessor - INFO - Extracted: 3 IPs, 4 domains, 11 users, 3 MITRE techniques
+2025-11-25 11:37:08,792 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 11:37:08,793 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1558.004', 'T1484', 'T1078'}
+2025-11-25 11:37:08,816 - llm_analysis.retrieval - INFO - Retrieved 3 knowledge items by MITRE ID
+2025-11-25 11:37:08,839 - knowledge_ingest.storage - WARNING - FAISS index is empty
+2025-11-25 11:37:08,839 - llm_analysis.retrieval - INFO - Semantic search returned 0/0 items above threshold 0.3
+2025-11-25 11:37:08,839 - llm_analysis.retrieval - INFO - Retrieved 3 total knowledge items (3 exact + 0 semantic)
+2025-11-25 11:37:08,844 - llm_analysis.analyze_window - INFO - Calling LLM for analysis...
+2025-11-25 11:37:08,844 - llm_analysis.llm_client - INFO - Sending analysis request to LLM (prompt length: 22819 chars)
+2025-11-25 11:39:08,925 - llm_analysis.llm_client - ERROR - LLM call failed (attempt 1/3): HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=120)
+2025-11-25 11:39:21,133 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-25 11:39:21,133 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-25 11:39:21,133 - llm_analysis.storage - INFO - Database connection closed
+2025-11-25 11:39:21,134 - llm_analysis.analyze_window - INFO - Threat Analyzer closed
+2025-11-25 18:39:45,486 - __main__ - INFO - ================================================================================
+2025-11-25 18:39:45,486 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-25 18:39:45,486 - __main__ - INFO - ================================================================================
+2025-11-25 18:39:45,497 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-25 18:39:45,497 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-25 18:39:45,554 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 18:39:45,554 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-25 18:39:45,803 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-25 11:39:53,647 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-25 11:39:59,757 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-25 11:39:59,757 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-25 11:39:59,759 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-25 11:39:59,791 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-25 11:39:59,800 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-25 11:39:59,801 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-25 11:39:59,802 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (0 vectors in index)
+2025-11-25 11:39:59,822 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 11:39:59,822 - llm_analysis.llm_client - INFO - Initializing LLM client: deepseek-r1:8b at http://localhost:11434/
+2025-11-25 11:40:00,980 - llm_analysis.llm_client - WARNING - Using deprecated langchain-community. Consider upgrading: pip install -U langchain-ollama
+2025-11-25 11:40:00,981 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-25 11:40:00,998 - llm_analysis.storage - INFO - Connected to PostgreSQL database for reports: localhost/wazuh_rag
+2025-11-25 11:40:00,999 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-25 11:40:00,999 - llm_analysis.analyze_window - INFO - Starting analysis for window: 2025-11-25T11:10:00.999128 to 2025-11-25T11:40:00.999128
+2025-11-25 11:40:00,999 - llm_analysis.retrieval - INFO - Querying alerts from 2025-11-25T11:10:00.999128 to 2025-11-25T11:40:00.999128
+2025-11-25 11:40:01,068 - llm_analysis.retrieval - INFO - Retrieved 879 alerts from database
+2025-11-25 11:40:01,070 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1558.004', 'T1484', 'T1078'}
+2025-11-25 11:40:01,070 - llm_analysis.analyze_window - INFO - Analyzing 879 alerts from 6 hosts, 3 MITRE techniques
+2025-11-25 11:40:01,070 - llm_analysis.preprocessor - INFO - Preprocessing 879 alerts for deterministic extraction
+2025-11-25 11:40:01,788 - llm_analysis.preprocessor - INFO - Extracted: 3 IPs, 4 domains, 11 users, 3 MITRE techniques
+2025-11-25 11:40:01,806 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 11:40:01,807 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1558.004', 'T1484', 'T1078'}
+2025-11-25 11:40:01,823 - llm_analysis.retrieval - INFO - Retrieved 3 knowledge items by MITRE ID
+2025-11-25 11:40:02,022 - knowledge_ingest.storage - WARNING - FAISS index is empty
+2025-11-25 11:40:02,022 - llm_analysis.retrieval - INFO - Semantic search returned 0/0 items above threshold 0.3
+2025-11-25 11:40:02,023 - llm_analysis.retrieval - INFO - Retrieved 3 total knowledge items (3 exact + 0 semantic)
+2025-11-25 11:40:02,038 - llm_analysis.analyze_window - INFO - Calling LLM for analysis...
+2025-11-25 11:40:02,038 - llm_analysis.llm_client - INFO - Sending analysis request to LLM (prompt length: 22819 chars)
+2025-11-25 11:50:49,193 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-25 11:50:49,194 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-25 11:50:49,195 - llm_analysis.storage - INFO - Database connection closed
+2025-11-25 11:50:49,195 - llm_analysis.analyze_window - INFO - Threat Analyzer closed
+2025-11-25 19:16:15,960 - __main__ - INFO - ================================================================================
+2025-11-25 19:16:15,961 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-25 19:16:15,961 - __main__ - INFO - ================================================================================
+2025-11-25 19:16:15,966 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-25 19:16:15,966 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-25 19:16:16,009 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 19:16:16,009 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-25 19:16:16,231 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-25 12:16:21,384 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-25 12:16:24,820 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-25 12:16:24,820 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-25 12:16:24,822 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-25 12:16:24,861 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-25 12:16:24,870 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-25 12:16:24,871 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-25 12:16:24,871 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (0 vectors in index)
+2025-11-25 12:16:24,894 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 12:16:24,894 - llm_analysis.llm_client - INFO - Initializing LLM client: deepseek-r1:8b at http://100.78.222.23:11434
+2025-11-25 12:16:25,570 - llm_analysis.llm_client - WARNING - Using deprecated langchain-community. Consider upgrading: pip install -U langchain-ollama
+2025-11-25 12:16:25,570 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-25 12:16:25,583 - llm_analysis.storage - INFO - Connected to PostgreSQL database for reports: localhost/wazuh_rag
+2025-11-25 12:16:25,583 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-25 12:16:25,583 - llm_analysis.analyze_window - INFO - Starting analysis for window: 2025-11-25T11:46:25.583699 to 2025-11-25T12:16:25.583699
+2025-11-25 12:16:25,583 - llm_analysis.retrieval - INFO - Querying alerts from 2025-11-25T11:46:25.583699 to 2025-11-25T12:16:25.583699
+2025-11-25 12:16:25,642 - llm_analysis.retrieval - INFO - Retrieved 990 alerts from database
+2025-11-25 12:16:25,644 - llm_analysis.retrieval - INFO - Extracted 7 unique MITRE techniques: {'T1484', 'T1485', 'T1112', 'T1078', 'T1070.004', 'T1565.001', 'T1558.004'}
+2025-11-25 12:16:25,644 - llm_analysis.analyze_window - INFO - Analyzing 990 alerts from 6 hosts, 7 MITRE techniques
+2025-11-25 12:16:25,644 - llm_analysis.preprocessor - INFO - Preprocessing 990 alerts for deterministic extraction
+2025-11-25 12:16:26,105 - llm_analysis.preprocessor - INFO - Extracted: 3 IPs, 5 domains, 15 users, 7 MITRE techniques
+2025-11-25 12:16:26,119 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 12:16:26,120 - llm_analysis.retrieval - INFO - Extracted 7 unique MITRE techniques: {'T1484', 'T1485', 'T1112', 'T1078', 'T1070.004', 'T1565.001', 'T1558.004'}
+2025-11-25 12:16:26,151 - llm_analysis.retrieval - INFO - Retrieved 7 knowledge items by MITRE ID
+2025-11-25 12:16:26,178 - knowledge_ingest.storage - WARNING - FAISS index is empty
+2025-11-25 12:16:26,179 - llm_analysis.retrieval - INFO - Semantic search returned 0/0 items above threshold 0.3
+2025-11-25 12:16:26,179 - llm_analysis.retrieval - INFO - Retrieved 7 total knowledge items (7 exact + 0 semantic)
+2025-11-25 12:16:26,185 - llm_analysis.analyze_window - INFO - Calling LLM for analysis...
+2025-11-25 12:16:26,185 - llm_analysis.llm_client - INFO - Sending analysis request to LLM (prompt length: 26447 chars)
+2025-11-25 12:16:48,557 - llm_analysis.llm_client - ERROR - Could not extract valid JSON from LLM response
+2025-11-25 12:16:48,557 - llm_analysis.llm_client - WARNING - Failed to parse JSON (attempt 1/3)
+2025-11-25 12:18:31,304 - llm_analysis.llm_client - ERROR - Could not extract valid JSON from LLM response
+2025-11-25 12:18:31,305 - llm_analysis.llm_client - WARNING - Failed to parse JSON (attempt 2/3)
+2025-11-25 12:20:11,170 - llm_analysis.llm_client - INFO - Successfully parsed LLM response
+2025-11-25 12:20:11,170 - llm_analysis.analyze_window - INFO - Applying Phase 4.1 fallback logic...
+2025-11-25 12:20:11,170 - llm_analysis.analyze_window - INFO - Fallback: Filled ips with 3 items
+2025-11-25 12:20:11,170 - llm_analysis.analyze_window - INFO - Fallback: Filled users with 15 items
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Fallback: Filled domains with 5 items
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Fallback: Filled file_paths with 25 items
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Fallback: Filled registry_keys with 20 items
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Fallback: Filled processes with 4 items
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Timeline enhanced: no Unknown values found
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Severity +2: Destructive technique detected
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Severity +2: Domain policy modification detected
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Severity +1: Multi-host impact (3 hosts)
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Severity +1: Valid account access detected
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Severity +1: Privilege escalation technique detected
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Deterministic severity: Critical (score: 7)
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - WARNING - Overriding LLM severity 'High' with deterministic 'Critical'
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Generating deterministic business impact
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Generated business impact: domain_wide=High - Potential for, operational=High - Service disru
+2025-11-25 12:20:11,171 - llm_analysis.analyze_window - INFO - Enhanced playbooks: 6 containment, 5 eradication, 4 recovery actions
+2025-11-25 12:20:11,172 - llm_analysis.analyze_window - INFO - Fallback logic complete (Phase 4.2 enhanced)
+2025-11-25 12:20:11,172 - llm_analysis.analyze_window - INFO - Calculated risk score: 100/100
+2025-11-25 12:20:11,191 - llm_analysis.storage - INFO - Saved report 83 for window 2025-11-25T11:46:25.583699 to 2025-11-25T12:16:25.583699 (990 alerts, severity: Critical, risk score: 100)
+2025-11-25 12:20:11,191 - llm_analysis.storage - WARNING - Failed to send Telegram notification: No module named 'telegram_notify'
+2025-11-25 12:20:11,191 - llm_analysis.analyze_window - INFO - ✓ Analysis complete, saved as report ID 83
+2025-11-25 12:20:11,193 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-25 12:20:11,194 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-25 12:20:11,194 - llm_analysis.storage - INFO - Database connection closed
+2025-11-25 12:20:11,194 - llm_analysis.analyze_window - INFO - Threat Analyzer closed
+2025-11-25 19:50:30,273 - __main__ - INFO - ================================================================================
+2025-11-25 19:50:30,273 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-25 19:50:30,273 - __main__ - INFO - ================================================================================
+2025-11-25 19:50:30,280 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-25 19:50:30,280 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-25 19:50:30,324 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 19:50:30,324 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-25 19:50:30,515 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-25 12:50:35,436 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-25 12:50:38,935 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-25 12:50:38,935 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-25 12:50:38,936 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-25 12:50:38,965 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-25 12:50:38,972 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-25 12:50:38,972 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-25 12:50:38,973 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (0 vectors in index)
+2025-11-25 12:50:38,996 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 12:50:38,996 - llm_analysis.llm_client - INFO - Initializing LLM client: qwen3:8b at http://100.78.222.23:11434
+2025-11-25 12:50:39,669 - llm_analysis.llm_client - WARNING - Using deprecated langchain-community. Consider upgrading: pip install -U langchain-ollama
+2025-11-25 12:50:39,669 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-25 12:50:39,683 - llm_analysis.storage - INFO - Connected to PostgreSQL database for reports: localhost/wazuh_rag
+2025-11-25 12:50:39,683 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-25 12:50:39,683 - llm_analysis.analyze_window - INFO - Starting analysis for window: 2025-11-25T12:20:39.683444 to 2025-11-25T12:50:39.683444
+2025-11-25 12:50:39,683 - llm_analysis.retrieval - INFO - Querying alerts from 2025-11-25T12:20:39.683444 to 2025-11-25T12:50:39.683444
+2025-11-25 12:50:39,731 - llm_analysis.retrieval - INFO - Retrieved 988 alerts from database
+2025-11-25 12:50:39,732 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1078', 'T1484', 'T1558.004'}
+2025-11-25 12:50:39,732 - llm_analysis.analyze_window - INFO - Analyzing 988 alerts from 6 hosts, 3 MITRE techniques
+2025-11-25 12:50:39,732 - llm_analysis.preprocessor - INFO - Preprocessing 988 alerts for deterministic extraction
+2025-11-25 12:50:40,184 - llm_analysis.preprocessor - INFO - Extracted: 3 IPs, 4 domains, 11 users, 3 MITRE techniques
+2025-11-25 12:50:40,197 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 12:50:40,198 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1078', 'T1484', 'T1558.004'}
+2025-11-25 12:50:40,213 - llm_analysis.retrieval - INFO - Retrieved 3 knowledge items by MITRE ID
+2025-11-25 12:50:40,239 - knowledge_ingest.storage - WARNING - FAISS index is empty
+2025-11-25 12:50:40,239 - llm_analysis.retrieval - INFO - Semantic search returned 0/0 items above threshold 0.3
+2025-11-25 12:50:40,239 - llm_analysis.retrieval - INFO - Retrieved 3 total knowledge items (3 exact + 0 semantic)
+2025-11-25 12:50:40,245 - llm_analysis.analyze_window - INFO - Calling LLM for analysis...
+2025-11-25 12:50:40,245 - llm_analysis.llm_client - INFO - Sending analysis request to LLM (prompt length: 22819 chars)
+2025-11-25 12:51:57,281 - llm_analysis.llm_client - INFO - Successfully parsed LLM response
+2025-11-25 12:51:57,281 - llm_analysis.analyze_window - INFO - Applying Phase 4.1 fallback logic...
+2025-11-25 12:51:57,282 - llm_analysis.analyze_window - INFO - Fallback: Filled domains with 4 items
+2025-11-25 12:51:57,282 - llm_analysis.analyze_window - WARNING - Timeline contains Unknown values, regenerating from alerts
+2025-11-25 12:51:57,282 - llm_analysis.analyze_window - INFO - Sampling 110 alerts from 988 total (every 9th alert)
+2025-11-25 12:51:57,282 - llm_analysis.analyze_window - INFO - Found 3 unique techniques in alerts: ['T1078', 'T1484', 'T1558.004']
+2025-11-25 12:51:57,282 - llm_analysis.analyze_window - INFO -   - T1078: 31 alerts
+2025-11-25 12:51:57,283 - llm_analysis.analyze_window - INFO -   - T1484: 8 alerts
+2025-11-25 12:51:57,283 - llm_analysis.analyze_window - INFO -   - T1558.004: 9 alerts
+2025-11-25 12:51:57,283 - llm_analysis.analyze_window - INFO - Timeline regenerated: 3 events (prioritizing rare techniques)
+2025-11-25 12:51:57,283 - llm_analysis.analyze_window - INFO - Severity +2: Domain policy modification detected
+2025-11-25 12:51:57,283 - llm_analysis.analyze_window - INFO - Severity +1: Multi-host impact (3 hosts)
+2025-11-25 12:51:57,283 - llm_analysis.analyze_window - INFO - Severity +1: Valid account access detected
+2025-11-25 12:51:57,283 - llm_analysis.analyze_window - INFO - Severity +1: Privilege escalation technique detected
+2025-11-25 12:51:57,284 - llm_analysis.analyze_window - INFO - Deterministic severity: High (score: 5)
+2025-11-25 12:51:57,284 - llm_analysis.analyze_window - INFO - Generating deterministic business impact
+2025-11-25 12:51:57,284 - llm_analysis.analyze_window - INFO - Generated business impact: domain_wide=High - Potential for, operational=High - Service disru
+2025-11-25 12:51:57,284 - llm_analysis.analyze_window - INFO - Enhanced playbooks: 5 containment, 3 eradication, 4 recovery actions
+2025-11-25 12:51:57,284 - llm_analysis.analyze_window - INFO - Fallback logic complete (Phase 4.2 enhanced)
+2025-11-25 12:51:57,286 - llm_analysis.analyze_window - INFO - Calculated risk score: 100/100
+2025-11-25 12:51:57,296 - llm_analysis.storage - INFO - Saved report 85 for window 2025-11-25T12:20:39.683444 to 2025-11-25T12:50:39.683444 (988 alerts, severity: High, risk score: 100)
+2025-11-25 12:51:57,297 - llm_analysis.storage - WARNING - Failed to send Telegram notification: No module named 'telegram_notify'
+2025-11-25 12:51:57,297 - llm_analysis.analyze_window - INFO - ✓ Analysis complete, saved as report ID 85
+2025-11-25 12:51:57,299 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-25 12:51:57,300 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-25 12:51:57,300 - llm_analysis.storage - INFO - Database connection closed
+2025-11-25 12:51:57,301 - llm_analysis.analyze_window - INFO - Threat Analyzer closed
+2025-11-25 19:59:29,513 - __main__ - INFO - ================================================================================
+2025-11-25 19:59:29,513 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-25 19:59:29,513 - __main__ - INFO - ================================================================================
+2025-11-25 19:59:29,520 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-25 19:59:29,520 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-25 19:59:29,564 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 19:59:29,564 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-25 19:59:29,755 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-25 12:59:34,737 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-25 12:59:38,227 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-25 12:59:38,228 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-25 12:59:38,229 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-25 12:59:38,264 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-25 12:59:38,272 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-25 12:59:38,273 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-25 12:59:38,273 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (0 vectors in index)
+2025-11-25 12:59:38,294 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 12:59:38,295 - llm_analysis.llm_client - INFO - Initializing LLM client: qwen3:8b at http://100.78.222.23:11434
+2025-11-25 12:59:38,980 - llm_analysis.llm_client - WARNING - Using deprecated langchain-community. Consider upgrading: pip install -U langchain-ollama
+2025-11-25 12:59:38,981 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-25 12:59:38,994 - llm_analysis.storage - INFO - Connected to PostgreSQL database for reports: localhost/wazuh_rag
+2025-11-25 12:59:38,994 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-25 12:59:38,994 - llm_analysis.analyze_window - INFO - Starting analysis for window: 2025-11-25T12:29:38.994567 to 2025-11-25T12:59:38.994567
+2025-11-25 12:59:38,994 - llm_analysis.retrieval - INFO - Querying alerts from 2025-11-25T12:29:38.994567 to 2025-11-25T12:59:38.994567
+2025-11-25 12:59:39,037 - llm_analysis.retrieval - INFO - Retrieved 838 alerts from database
+2025-11-25 12:59:39,038 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1078', 'T1484', 'T1558.004'}
+2025-11-25 12:59:39,038 - llm_analysis.analyze_window - INFO - Analyzing 838 alerts from 6 hosts, 3 MITRE techniques
+2025-11-25 12:59:39,038 - llm_analysis.preprocessor - INFO - Preprocessing 838 alerts for deterministic extraction
+2025-11-25 12:59:39,422 - llm_analysis.preprocessor - INFO - Extracted: 3 IPs, 4 domains, 11 users, 3 MITRE techniques
+2025-11-25 12:59:39,434 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 12:59:39,435 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1078', 'T1484', 'T1558.004'}
+2025-11-25 12:59:39,457 - llm_analysis.retrieval - INFO - Retrieved 3 knowledge items by MITRE ID
+2025-11-25 12:59:39,483 - knowledge_ingest.storage - WARNING - FAISS index is empty
+2025-11-25 12:59:39,484 - llm_analysis.retrieval - INFO - Semantic search returned 0/0 items above threshold 0.3
+2025-11-25 12:59:39,484 - llm_analysis.retrieval - INFO - Retrieved 3 total knowledge items (3 exact + 0 semantic)
+2025-11-25 12:59:39,489 - llm_analysis.analyze_window - ERROR - Analysis failed: 'action, confidence, reasoning'
+Traceback (most recent call last):
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/analyze_window.py", line 177, in analyze_window
+    user_prompt = format_user_prompt(
+  File "/home/aid3n/security_projects/rag_wazuh/llm_analysis/prompt_templates.py", line 330, in format_user_prompt
+    return USER_PROMPT_TEMPLATE.format(
+KeyError: 'action, confidence, reasoning'
+2025-11-25 12:59:39,491 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-25 12:59:39,491 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-25 12:59:39,491 - llm_analysis.storage - INFO - Database connection closed
+2025-11-25 12:59:39,491 - llm_analysis.analyze_window - INFO - Threat Analyzer closed
+2025-11-25 20:03:03,229 - __main__ - INFO - ================================================================================
+2025-11-25 20:03:03,229 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-25 20:03:03,229 - __main__ - INFO - ================================================================================
+2025-11-25 20:03:03,236 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-25 20:03:03,236 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-25 20:03:03,279 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 20:03:03,279 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-25 20:03:03,459 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-25 13:03:08,487 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-25 13:03:11,980 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-25 13:03:11,980 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-25 13:03:11,982 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-25 13:03:12,018 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-25 13:03:12,026 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-25 13:03:12,027 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-25 13:03:12,027 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (0 vectors in index)
+2025-11-25 13:03:12,048 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 13:03:12,049 - llm_analysis.llm_client - INFO - Initializing LLM client: qwen3:8b at http://100.78.222.23:11434
+2025-11-25 13:03:12,735 - llm_analysis.llm_client - WARNING - Using deprecated langchain-community. Consider upgrading: pip install -U langchain-ollama
+2025-11-25 13:03:12,735 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-25 13:03:12,748 - llm_analysis.storage - INFO - Connected to PostgreSQL database for reports: localhost/wazuh_rag
+2025-11-25 13:03:12,749 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-25 13:03:12,749 - llm_analysis.analyze_window - INFO - Starting analysis for window: 2025-11-25T12:33:12.749106 to 2025-11-25T13:03:12.749106
+2025-11-25 13:03:12,749 - llm_analysis.retrieval - INFO - Querying alerts from 2025-11-25T12:33:12.749106 to 2025-11-25T13:03:12.749106
+2025-11-25 13:03:12,791 - llm_analysis.retrieval - INFO - Retrieved 869 alerts from database
+2025-11-25 13:03:12,792 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1078', 'T1558.004', 'T1484'}
+2025-11-25 13:03:12,792 - llm_analysis.analyze_window - INFO - Analyzing 869 alerts from 6 hosts, 3 MITRE techniques
+2025-11-25 13:03:12,792 - llm_analysis.preprocessor - INFO - Preprocessing 869 alerts for deterministic extraction
+2025-11-25 13:03:13,222 - llm_analysis.preprocessor - INFO - Extracted: 3 IPs, 4 domains, 11 users, 3 MITRE techniques
+2025-11-25 13:03:13,242 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-25 13:03:13,243 - llm_analysis.retrieval - INFO - Extracted 3 unique MITRE techniques: {'T1078', 'T1558.004', 'T1484'}
+2025-11-25 13:03:13,262 - llm_analysis.retrieval - INFO - Retrieved 3 knowledge items by MITRE ID
+2025-11-25 13:03:13,289 - knowledge_ingest.storage - WARNING - FAISS index is empty
+2025-11-25 13:03:13,289 - llm_analysis.retrieval - INFO - Semantic search returned 0/0 items above threshold 0.3
+2025-11-25 13:03:13,289 - llm_analysis.retrieval - INFO - Retrieved 3 total knowledge items (3 exact + 0 semantic)
+2025-11-25 13:03:13,295 - llm_analysis.analyze_window - INFO - Calling LLM for analysis...
+2025-11-25 13:03:13,295 - llm_analysis.llm_client - INFO - Sending analysis request to LLM (prompt length: 24253 chars)
+2025-11-25 13:04:28,053 - llm_analysis.llm_client - INFO - Successfully parsed LLM response
+2025-11-25 13:04:28,053 - llm_analysis.analyze_window - INFO - Applying Phase 4.1 fallback logic...
+2025-11-25 13:04:28,053 - llm_analysis.analyze_window - INFO - Fallback: Filled domains with 4 items
+2025-11-25 13:04:28,054 - llm_analysis.analyze_window - WARNING - Timeline contains Unknown values, regenerating from alerts
+2025-11-25 13:04:28,054 - llm_analysis.analyze_window - INFO - Sampling 109 alerts from 869 total (every 8th alert)
+2025-11-25 13:04:28,054 - llm_analysis.analyze_window - INFO - Found 3 unique techniques in alerts: ['T1558.004', 'T1078', 'T1484']
+2025-11-25 13:04:28,054 - llm_analysis.analyze_window - INFO -   - T1558.004: 4 alerts
+2025-11-25 13:04:28,054 - llm_analysis.analyze_window - INFO -   - T1078: 34 alerts
+2025-11-25 13:04:28,054 - llm_analysis.analyze_window - INFO -   - T1484: 4 alerts
+2025-11-25 13:04:28,055 - llm_analysis.analyze_window - INFO - Timeline regenerated: 3 events (prioritizing rare techniques)
+2025-11-25 13:04:28,055 - llm_analysis.analyze_window - INFO - Severity +2: Domain policy modification detected
+2025-11-25 13:04:28,055 - llm_analysis.analyze_window - INFO - Severity +1: Multi-host impact (3 hosts)
+2025-11-25 13:04:28,055 - llm_analysis.analyze_window - INFO - Severity +1: Valid account access detected
+2025-11-25 13:04:28,055 - llm_analysis.analyze_window - INFO - Severity +1: Privilege escalation technique detected
+2025-11-25 13:04:28,055 - llm_analysis.analyze_window - INFO - Deterministic severity: High (score: 5)
+2025-11-25 13:04:28,055 - llm_analysis.analyze_window - INFO - Generating deterministic business impact
+2025-11-25 13:04:28,056 - llm_analysis.analyze_window - INFO - Generated business impact: domain_wide=High - Potential for, operational=High - Service disru
+2025-11-25 13:04:28,056 - llm_analysis.analyze_window - INFO - Enhanced playbooks: 4 containment, 1 eradication, 2 recovery actions
+2025-11-25 13:04:28,056 - llm_analysis.analyze_window - INFO - Fallback logic complete (Phase 4.2 enhanced)
+2025-11-25 13:04:28,057 - llm_analysis.analyze_window - INFO - Calculated risk score: 28/100
+2025-11-25 13:04:28,068 - llm_analysis.storage - INFO - Saved report 86 for window 2025-11-25T12:33:12.749106 to 2025-11-25T13:03:12.749106 (869 alerts, severity: High, risk score: 28)
+2025-11-25 13:04:28,069 - llm_analysis.storage - WARNING - Failed to send Telegram notification: No module named 'telegram_notify'
+2025-11-25 13:04:28,069 - llm_analysis.analyze_window - INFO - ✓ Analysis complete, saved as report ID 86
+2025-11-25 13:04:28,070 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-25 13:04:28,071 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-25 13:04:28,071 - llm_analysis.storage - INFO - Database connection closed
+2025-11-25 13:04:28,071 - llm_analysis.analyze_window - INFO - Threat Analyzer closed
+2025-11-27 19:27:24,433 - __main__ - INFO - ================================================================================
+2025-11-27 19:27:24,433 - __main__ - INFO - Phase 3: Automated Threat Analysis
+2025-11-27 19:27:24,433 - __main__ - INFO - ================================================================================
+2025-11-27 19:27:24,441 - llm_analysis.analyze_window - INFO - Loaded configuration from llm_analysis/config.yaml
+2025-11-27 19:27:24,441 - llm_analysis.analyze_window - INFO - Initializing Threat Analyzer
+2025-11-27 19:27:24,506 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-27 19:27:24,506 - llm_analysis.retrieval - INFO - Initializing knowledge retriever
+2025-11-27 19:27:24,772 - knowledge_ingest.embedder - INFO - Initializing embedding model: sentence-transformers/all-MiniLM-L6-v2 on cpu
+2025-11-27 12:27:31,614 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
+2025-11-27 12:27:35,491 - knowledge_ingest.embedder - INFO - Loaded model sentence-transformers/all-MiniLM-L6-v2 (dimension: 384, device: cpu)
+2025-11-27 12:27:35,492 - knowledge_ingest.storage - INFO - Initializing storage (FAISS: data/faiss_index/knowledge.index, SQLite: data/faiss_index/knowledge.db, dim: 384)
+2025-11-27 12:27:35,494 - faiss.loader - INFO - Loading faiss with AVX2 support.
+2025-11-27 12:27:35,529 - faiss.loader - INFO - Successfully loaded faiss with AVX2 support.
+2025-11-27 12:27:35,540 - knowledge_ingest.storage - INFO - Loaded existing FAISS index with 0 vectors
+2025-11-27 12:27:35,540 - knowledge_ingest.storage - INFO - Initialized SQLite metadata database
+2025-11-27 12:27:35,540 - llm_analysis.retrieval - INFO - Knowledge retriever initialized (0 vectors in index)
+2025-11-27 12:27:35,560 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-27 12:27:35,560 - llm_analysis.llm_client - INFO - Initializing LLM client: qwen3:8b at http://100.78.222.23:11434
+2025-11-27 12:27:36,282 - llm_analysis.llm_client - WARNING - Using deprecated langchain-community. Consider upgrading: pip install -U langchain-ollama
+2025-11-27 12:27:36,282 - llm_analysis.llm_client - INFO - LLM client initialized successfully
+2025-11-27 12:27:36,295 - llm_analysis.storage - INFO - Connected to PostgreSQL database for reports: localhost/wazuh_rag
+2025-11-27 12:27:36,295 - llm_analysis.analyze_window - INFO - All components initialized successfully
+2025-11-27 12:27:36,295 - llm_analysis.analyze_window - INFO - Starting analysis for window: 2025-11-27T11:57:36.295703 to 2025-11-27T12:27:36.295703
+2025-11-27 12:27:36,295 - llm_analysis.retrieval - INFO - Querying alerts from 2025-11-27T11:57:36.295703 to 2025-11-27T12:27:36.295703
+2025-11-27 12:27:36,357 - llm_analysis.retrieval - INFO - Retrieved 1029 alerts from database
+2025-11-27 12:27:36,358 - llm_analysis.retrieval - INFO - Extracted 11 unique MITRE techniques: {'T1565.001', 'T1078.002', 'T1070.004', 'T1485', 'T1112', 'T1531', 'T1558.004', 'T1484', 'T1550.002', 'T1078', 'T1021.001'}
+2025-11-27 12:27:36,358 - llm_analysis.analyze_window - INFO - Analyzing 1029 alerts from 6 hosts, 11 MITRE techniques
+2025-11-27 12:27:36,358 - llm_analysis.preprocessor - INFO - Preprocessing 1029 alerts for deterministic extraction
+2025-11-27 12:27:36,819 - llm_analysis.preprocessor - INFO - Extracted: 4 IPs, 12 domains, 18 users, 11 MITRE techniques
+2025-11-27 12:27:36,832 - llm_analysis.retrieval - INFO - Connected to PostgreSQL database: localhost/wazuh_rag
+2025-11-27 12:27:36,833 - llm_analysis.retrieval - INFO - Extracted 11 unique MITRE techniques: {'T1565.001', 'T1078.002', 'T1070.004', 'T1485', 'T1112', 'T1531', 'T1558.004', 'T1484', 'T1550.002', 'T1078', 'T1021.001'}
+2025-11-27 12:27:36,877 - llm_analysis.retrieval - INFO - Retrieved 11 knowledge items by MITRE ID
+2025-11-27 12:27:37,005 - knowledge_ingest.storage - WARNING - FAISS index is empty
+2025-11-27 12:27:37,005 - llm_analysis.retrieval - INFO - Semantic search returned 0/0 items above threshold 0.3
+2025-11-27 12:27:37,005 - llm_analysis.retrieval - INFO - Retrieved 11 total knowledge items (11 exact + 0 semantic)
+2025-11-27 12:27:37,013 - llm_analysis.analyze_window - INFO - Calling LLM for analysis...
+2025-11-27 12:27:37,013 - llm_analysis.llm_client - INFO - Sending analysis request to LLM (prompt length: 28943 chars)
+2025-11-27 12:28:55,513 - llm_analysis.llm_client - INFO - Successfully parsed LLM response
+2025-11-27 12:28:55,514 - llm_analysis.analyze_window - INFO - Applying Phase 4.1 fallback logic...
+2025-11-27 12:28:55,514 - llm_analysis.analyze_window - INFO - Fallback: Filled domains with 12 items
+2025-11-27 12:28:55,514 - llm_analysis.analyze_window - WARNING - Timeline contains Unknown values, regenerating from alerts
+2025-11-27 12:28:55,514 - llm_analysis.analyze_window - INFO - Sampling 103 alerts from 1029 total (every 10th alert)
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO - Found 9 unique techniques in alerts: ['T1558.004', 'T1078', 'T1565.001', 'T1112', 'T1070.004', 'T1485', 'T1484', 'T1550.002', 'T1078.002']
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO -   - T1558.004: 4 alerts
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO -   - T1078: 23 alerts
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO -   - T1565.001: 8 alerts
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO -   - T1112: 9 alerts
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO -   - T1070.004: 1 alerts
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO -   - T1485: 1 alerts
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO -   - T1484: 4 alerts
+2025-11-27 12:28:55,515 - llm_analysis.analyze_window - INFO -   - T1550.002: 1 alerts
+2025-11-27 12:28:55,516 - llm_analysis.analyze_window - INFO -   - T1078.002: 1 alerts
+2025-11-27 12:28:55,516 - llm_analysis.analyze_window - INFO - Timeline regenerated: 9 events (prioritizing rare techniques)
+2025-11-27 12:28:55,516 - llm_analysis.analyze_window - INFO - Severity +2: Destructive technique detected
+2025-11-27 12:28:55,516 - llm_analysis.analyze_window - INFO - Severity +2: Domain policy modification detected
+2025-11-27 12:28:55,516 - llm_analysis.analyze_window - INFO - Severity +1: Multi-host impact (3 hosts)
+2025-11-27 12:28:55,516 - llm_analysis.analyze_window - INFO - Severity +1: High alert volume (1029 alerts)
+2025-11-27 12:28:55,516 - llm_analysis.analyze_window - INFO - Severity +1: Privilege escalation technique detected
+2025-11-27 12:28:55,517 - llm_analysis.analyze_window - INFO - Deterministic severity: Critical (score: 7)
+2025-11-27 12:28:55,517 - llm_analysis.analyze_window - WARNING - Overriding LLM severity 'High' with deterministic 'Critical'
+2025-11-27 12:28:55,517 - llm_analysis.analyze_window - INFO - Generating deterministic business impact
+2025-11-27 12:28:55,517 - llm_analysis.analyze_window - INFO - Generated business impact: domain_wide=High - Potential for, operational=High - Service disru
+2025-11-27 12:28:55,517 - llm_analysis.analyze_window - INFO - Enhanced playbooks: 5 containment, 2 eradication, 4 recovery actions
+2025-11-27 12:28:55,517 - llm_analysis.analyze_window - INFO - Fallback logic complete (Phase 4.2 enhanced)
+2025-11-27 12:28:55,518 - llm_analysis.analyze_window - INFO - Calculated risk score: 100/100
+2025-11-27 12:28:55,528 - llm_analysis.storage - INFO - Saved report 125 for window 2025-11-27T11:57:36.295703 to 2025-11-27T12:27:36.295703 (1029 alerts, severity: Critical, risk score: 100)
+2025-11-27 12:28:55,529 - llm_analysis.storage - WARNING - Failed to send Telegram notification: No module named 'telegram_notify'
+2025-11-27 12:28:55,529 - llm_analysis.analyze_window - INFO - ✓ Analysis complete, saved as report ID 125
+2025-11-27 12:28:55,531 - knowledge_ingest.storage - INFO - Closed SQLite connection
+2025-11-27 12:28:55,531 - knowledge_ingest.storage - INFO - Saved FAISS index to data/faiss_index/knowledge.index
+2025-11-27 12:28:55,532 - llm_analysis.storage - INFO - Database connection closed
+2025-11-27 12:28:55,532 - llm_analysis.analyze_window - INFO - Threat Analyzer closed

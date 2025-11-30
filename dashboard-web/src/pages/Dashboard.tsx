@@ -18,7 +18,7 @@ import type { ThreatReport, DashboardStats } from '@/types';
 import { formatRelativeTime, getSeverityColor, getSeverityIcon, getRiskScoreColor } from '@/lib/utils';
 import StatsCard from '@/components/StatsCard';
 import RiskTrendChart from '@/components/RiskTrendChart';
-import SeverityDistribution from '@/components/SeverityDistribution';
+import TacticDistribution from '@/components/SeverityDistribution';
 
 export default function Dashboard() {
   const [allReports, setAllReports] = useState<ThreatReport[]>([]);
@@ -104,31 +104,34 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-neutral-50">
         <div className="text-center">
-          <RefreshCw className="w-12 h-12 text-info animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Loading threat intelligence...</p>
+          <RefreshCw className="w-12 h-12 text-neutral-900 animate-spin mx-auto mb-4" />
+          <p className="text-neutral-700 text-sm font-medium">Loading threat intelligence...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8 space-y-8 max-w-[1800px] mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="p-12 space-y-12 max-w-7xl mx-auto">
+      {/* Minimal Header */}
+      <div className="flex items-center justify-between border-b border-neutral-300 pb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Threat Analysis Dashboard</h1>
-          <p className="text-gray-400">
+          <h1 className="text-4xl font-light tracking-tight text-neutral-900 mb-2">
+            Threat Analysis Dashboard
+          </h1>
+          <p className="text-sm text-neutral-700 font-medium">
             AI-powered security insights and predictive threat intelligence
           </p>
         </div>
+
         <button
           onClick={loadData}
-          className="flex items-center space-x-2 px-4 py-2 bg-dark-card hover:bg-dark-hover border border-dark-border rounded-lg transition-colors"
+          className="btn-minimal flex items-center space-x-2"
         >
           <RefreshCw className="w-4 h-4" />
-          <span>Refresh</span>
+          <span className="text-sm font-medium">Refresh</span>
         </button>
       </div>
 
@@ -172,17 +175,19 @@ export default function Dashboard() {
           <RiskTrendChart />
         </div>
         <div>
-          <SeverityDistribution stats={stats} />
+          <TacticDistribution />
         </div>
       </div>
 
-      {/* Reports Table */}
-      <div className="bg-dark-card border border-dark-border rounded-lg overflow-hidden">
-        <div className="p-6 border-b border-dark-border space-y-4">
+      {/* Minimal Reports Table */}
+      <div className="bg-white border border-neutral-300">
+        <div className="p-6 border-b border-neutral-300 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">All Threat Reports</h2>
-            <div className="text-sm text-gray-400">
-              Showing {startIndex + 1}-{Math.min(endIndex, filteredReports.length)} of {filteredReports.length} reports
+            <h2 className="text-2xl font-medium tracking-tight text-neutral-900">
+              All Threat Reports
+            </h2>
+            <div className="text-sm text-neutral-700 font-medium">
+              {startIndex + 1}–{Math.min(endIndex, filteredReports.length)} of {filteredReports.length}
             </div>
           </div>
 
@@ -190,23 +195,23 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search Bar */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
               <input
                 type="text"
                 placeholder="Search by ID, summary, or hostname..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-dark-surface border border-dark-border rounded-lg pl-10 pr-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-info transition-colors"
+                className="input-minimal w-full pl-10 text-sm"
               />
             </div>
 
             {/* Severity Filter */}
             <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+              <Filter className="w-4 h-4 text-neutral-500" />
               <select
                 value={filterSeverity}
                 onChange={(e) => setFilterSeverity(e.target.value)}
-                className="bg-dark-surface border border-dark-border rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-info transition-colors"
+                className="input-minimal text-sm pr-8"
               >
                 <option value="all">All Severities</option>
                 <option value="critical">Critical</option>
@@ -218,11 +223,11 @@ export default function Dashboard() {
 
             {/* Date Filter */}
             <div className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4 text-gray-400" />
+              <Calendar className="w-4 h-4 text-neutral-500" />
               <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="bg-dark-surface border border-dark-border rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-info transition-colors"
+                className="input-minimal text-sm pr-8"
               >
                 <option value="all">All Time</option>
                 <option value="24h">Last 24 Hours</option>
@@ -234,45 +239,26 @@ export default function Dashboard() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-dark-surface">
+          <table>
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Report ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Severity
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Risk Score
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Alerts
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Affected Hosts
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  AI Summary
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Time
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th>Report ID</th>
+                <th>Severity</th>
+                <th>Risk Score</th>
+                <th>Alerts</th>
+                <th>Affected Hosts</th>
+                <th>AI Summary</th>
+                <th>Time</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-dark-border">
+            <tbody>
               {paginatedReports.map((report) => (
-                <tr
-                  key={report.id}
-                  className="hover:bg-dark-hover transition-colors"
-                >
+                <tr key={report.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Link
                       to={`/reports/${report.id}`}
-                      className="text-info hover:text-info-light font-mono font-medium"
+                      className="text-info hover:underline font-mono font-medium transition-colors"
                     >
                       #{report.id.toString().padStart(4, '0')}
                     </Link>
@@ -288,7 +274,7 @@ export default function Dashboard() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-2">
-                      <div className="flex-1 h-2 bg-dark-surface rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-neutral-200 rounded-full overflow-hidden">
                         <div
                           className={`h-full ${getRiskScoreColor(report.risk_score)} bg-current`}
                           style={{ width: `${report.risk_score}%` }}
@@ -299,7 +285,7 @@ export default function Dashboard() {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900 font-medium">
                     {report.alerts_count}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -307,31 +293,31 @@ export default function Dashboard() {
                       {report.hosts?.slice(0, 3).map((host, idx) => (
                         <div
                           key={idx}
-                          className="w-8 h-8 rounded-full bg-dark-surface border-2 border-dark-card flex items-center justify-center text-xs font-medium"
+                          className="w-8 h-8 rounded-full bg-neutral-200 border-2 border-white flex items-center justify-center text-xs font-medium text-neutral-900"
                           title={host}
                         >
                           {host.charAt(0).toUpperCase()}
                         </div>
                       ))}
                       {report.hosts && report.hosts.length > 3 && (
-                        <div className="w-8 h-8 rounded-full bg-dark-surface border-2 border-dark-card flex items-center justify-center text-xs font-medium">
+                        <div className="w-8 h-8 rounded-full bg-neutral-200 border-2 border-white flex items-center justify-center text-xs font-medium text-neutral-900">
                           +{report.hosts.length - 3}
                         </div>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 max-w-md">
-                    <p className="text-sm text-gray-300 truncate" title={report.details?.tldr || report.summary}>
+                    <p className="text-sm text-neutral-900 truncate" title={report.details?.tldr || report.summary}>
                       {report.details?.tldr || report.summary || 'No summary available'}
                     </p>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">
                     {formatRelativeTime(report.created_at)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Link
                       to={`/reports/${report.id}`}
-                      className="inline-flex items-center space-x-1 text-info hover:text-info-light transition-colors"
+                      className="inline-flex items-center space-x-1 text-info hover:underline transition-colors font-medium"
                     >
                       <span className="text-sm">View</span>
                       <ArrowRight className="w-4 h-4" />
@@ -344,9 +330,9 @@ export default function Dashboard() {
 
           {filteredReports.length === 0 && (
             <div className="text-center py-12">
-              <Shield className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">No threat reports found</p>
-              <p className="text-sm text-gray-500 mt-2">
+              <Shield className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
+              <p className="text-neutral-900 font-medium">No threat reports found</p>
+              <p className="text-sm text-neutral-700 mt-2">
                 {searchQuery || filterSeverity !== 'all' || dateFilter !== 'all'
                   ? 'Try adjusting your filters'
                   : 'System is monitoring for security threats...'}
@@ -355,14 +341,14 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Pagination */}
+        {/* Minimal Pagination */}
         {filteredReports.length > 0 && totalPages > 1 && (
-          <div className="bg-dark-surface border-t border-dark-border px-6 py-4">
+          <div className="bg-neutral-50 border-t border-neutral-300 px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Page info */}
-              <div className="text-sm text-gray-400">
-                Page <span className="font-semibold text-white">{currentPage}</span> of{' '}
-                <span className="font-semibold text-white">{totalPages}</span>
+              <div className="text-sm text-neutral-900 font-medium">
+                Page <span className="font-semibold">{currentPage}</span> of{' '}
+                <span className="font-semibold">{totalPages}</span>
               </div>
 
               {/* Pagination controls */}
@@ -370,9 +356,9 @@ export default function Dashboard() {
                 <button
                   onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-gray-400 hover:text-white hover:border-info/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="btn-minimal disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
 
                 {/* Page numbers */}
@@ -393,10 +379,10 @@ export default function Dashboard() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                        className={`px-4 py-2 text-sm font-medium transition-all ${
                           currentPage === pageNum
-                            ? 'bg-info text-white'
-                            : 'bg-dark-card border border-dark-border text-gray-400 hover:text-white hover:border-info/30'
+                            ? 'bg-neutral-900 text-white'
+                            : 'btn-minimal'
                         }`}
                       >
                         {pageNum}
@@ -408,9 +394,9 @@ export default function Dashboard() {
                 <button
                   onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 bg-dark-card border border-dark-border rounded-lg text-gray-400 hover:text-white hover:border-info/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="btn-minimal disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>

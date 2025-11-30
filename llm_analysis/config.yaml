@@ -4,10 +4,10 @@
 # NOTE: DeepSeek-R1 optimized for reasoning and pattern analysis
 # Prompts designed for minimal instruction, emphasis on log-based prediction
 llm:
-  base_url: "http://192.168.1.2:11434"
-  model: "deepseek-r1:8b"
+  base_url: "http://100.78.222.23:11434"
+  model: "qwen3vbe :8b"
   temperature: 0.1              # Low temperature for consistent analysis
-  timeout: 120                  # Request timeout in seconds
+  timeout: 600                  # Request timeout in seconds
   max_retries: 3                # Retry on failure
 
 # Analysis Window
